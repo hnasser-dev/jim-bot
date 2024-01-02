@@ -16,7 +16,7 @@ DISCORD_ADMIN_ID = os.environ["DISCORD_ADMIN_ID"]
 DISCORD_INVITE_LINK = os.environ["DISCORD_INVITE_LINK"]
 
 """ Absolute file paths """
-ENV_PY = Path(__file__)
-SRC_DIR = ENV_PY.parent
-TEST_DIR = os.path.join(SRC_DIR.parent, "tests")
-LOG_FILE = os.path.join(SRC_DIR, f"logs/bot.log")
+ENV_PY_PATH = Path(__file__)
+SRC_DIR_PATH = ENV_PY_PATH.parent
+TEST_DIR_PATH = os.path.join(SRC_DIR_PATH.parent, "tests")
+LOG_FILE_PATH = os.path.join(SRC_DIR_PATH, f"logs/bot.log")
