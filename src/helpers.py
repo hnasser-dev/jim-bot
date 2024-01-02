@@ -31,7 +31,12 @@ class DiscordCtx:
         reply_msg = DiscordCtx.emojify_str(bot_message, log_level)
         await self.reply_to_user(reply_msg, ping)
 
-        # logging
+        """
+        logging:
+            - error: logger.error
+            - unsuccessful action: logger.warning
+            - successful action: logger.debug        
+        """
         full_log_message = f"{log_message} ({self.ctx.message})" if log_message else f"{bot_message} ({self.ctx.message})"
         if log_level == "error":
             MY_LOGGER.logger.error(full_log_message)
