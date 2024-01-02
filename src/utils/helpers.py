@@ -1,11 +1,11 @@
 from discord.ext import commands
 from datetime import datetime
 import pytz
-from src.env import LOG_FILE_PATH
+from utils.env import LOG_FILE_PATH
 
 
 """ Logging Configuration """
-from src.logs.log_handler import MyLogger
+from logs.log_handler import MyLogger
 from pathlib import Path
 file_stem = Path(__file__).stem # get name of the current file (without .py)
 src_dir = Path(__file__).parent
