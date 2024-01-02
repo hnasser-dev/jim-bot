@@ -14,8 +14,14 @@ class Commands(commands.Cog):
         Automatically joins the current server (joinserver), too
         """
         contxt = DiscordCtx(ctx)
-        funcs.register_user(user_id=contxt.user_id)
-        funcs.add_user_to_server(user_id=contxt.user_id, server_id=contxt.server_id)
+        err1 = funcs.register_user(user_id=contxt.user_id)
+        if err1:
+            await contxt.report(err1.text, log_level="warning")
+            return
+        err2 = funcs.add_user_to_server(user_id=contxt.user_id, server_id=contxt.server_id)
+        if err2:
+            await contxt.report(err2.text, log_level="warning")
+            return
         await contxt.report("placeholder")
 
     @commands.command()

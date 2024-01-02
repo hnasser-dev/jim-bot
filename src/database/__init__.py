@@ -1,13 +1,13 @@
 import sqlite3
+from utils.helpers import ErrorLevel
 
 
 class DatabaseManager:
     def __init__(self, db_path):
         self.db_path = db_path
-        self.conn = None
-        self.cursor = None
+        self.connect()
 
-    async def connect(self):
+    def connect(self):
         try:
             self.conn = sqlite3.connect(self.db_path)
             # self.conn.row_factory = sqlite3.Row
@@ -16,14 +16,14 @@ class DatabaseManager:
         except sqlite3.Error as e:
             print(f"Database connection error: {e}")
 
-    async def disconnect(self):
+    def disconnect(self):
         if self.conn:
             self.conn.commit()
             self.conn.close()
             print("Database disconnected.")
 
     def execute_query(self, query, params={}):
-        if not self.cursor:
+        if not self.cursor or not self.conn:
             return
         try:
             self.cursor.execute(query, params)
@@ -31,7 +31,14 @@ class DatabaseManager:
         except sqlite3.Error as e:
             print(f"Query execution error: {e}")
             return None
-        
+
+
+class DBErrorHandler:
+    def __init__(self, error_level=ErrorLevel.DEFAULT, text="An unknown error has occurred.", exception=None):
+        self.error_level = error_level
+        self.text = text # readable text describing the issue
+        self.exception = exception
+
 
 # class CustomRowFactory:
 #     def __init__(self, cursor, row):

@@ -8,7 +8,7 @@ from utils.env import (
     DEBUG,
     DB_PATH
 )
-from database import DatabaseManager
+from utils.commands import DatabaseCommandManager
 
 
 class MyBot(commands.Bot):
@@ -18,7 +18,7 @@ class MyBot(commands.Bot):
             description=description,
             intents=intents
         )
-        self.database = DatabaseManager(DB_PATH)
+        self.database = DatabaseCommandManager(DB_PATH)
 
     async def on_ready(self):
         print(f"Logged in as {self.user}.")
@@ -39,7 +39,6 @@ class MyBot(commands.Bot):
 
     async def setup_hook(self):
         """ Runs when the bot first starts up """
-        await self.database.connect()
         await self.load_cogs()
 
 
