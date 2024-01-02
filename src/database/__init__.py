@@ -22,15 +22,9 @@ class DatabaseManager:
             self.conn.close()
             print("Database disconnected.")
 
-    def execute_query(self, query, params={}):
-        if not self.cursor or not self.conn:
-            return
-        try:
-            self.cursor.execute(query, params)
-            return self.cursor.fetchall()
-        except sqlite3.Error as e:
-            print(f"Query execution error: {e}")
-            return None
+    def execute_query(self, query, params={}) -> list:
+        self.cursor.execute(query, params)
+        return self.cursor.fetchall()
 
 
 class DBErrorHandler:
