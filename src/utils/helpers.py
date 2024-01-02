@@ -16,6 +16,12 @@ MY_LOGGER = MyLogger(
 )
 
 
+class ErrorLevel(Enum):
+    ERROR = 2
+    WARNING = 1
+    DEFAULT = 0
+
+
 class DiscordCtx:
     def __init__(self, ctx: commands.Context, *args):
         self.ctx = ctx # for accessing attributes of the original ctx object
@@ -25,7 +31,7 @@ class DiscordCtx:
         self.server_name = str(ctx.guild)
         self.timestamp = str(curr_time_utc())
 
-    async def report(self, bot_message: str, ping=False, log_message=None, log_level=None) -> None:
+    async def report(self, bot_message: str, ping=False, log_message=None, log_level=ErrorLevel.DEFAULT) -> None:
         """
         Replies to the user with an appropriate (emojified) message
         Logs activity via a custom logger
@@ -41,12 +47,13 @@ class DiscordCtx:
             - successful action: logger.debug        
         """
         full_log_message = f"{log_message} ({self.ctx.message})" if log_message else f"{bot_message} ({self.ctx.message})"
-        if log_level == "error":
-            MY_LOGGER.logger.error(full_log_message)
-        elif log_level == "warning":
-            MY_LOGGER.logger.warning(full_log_message)
-        else:
-            MY_LOGGER.logger.debug(full_log_message)
+        match log_level.name:
+            case "ERROR":
+                MY_LOGGER.logger.error(full_log_message)
+            case "WARNING":
+                MY_LOGGER.logger.warning(full_log_message)
+            case _:
+                MY_LOGGER.logger.debug(full_log_message)
 
     async def reply_to_user(self, msg=None, ping=False):
         if ping:
@@ -68,12 +75,6 @@ class DiscordCtx:
             case _:
                 emoji_str = ""
         return emoji_str + msg
-
-
-class ErrorLevel(Enum):
-    ERROR = 2
-    WARNING = 1
-    DEFAULT = 0
 
 
 """ Helper Functions - used for multiple commands """
