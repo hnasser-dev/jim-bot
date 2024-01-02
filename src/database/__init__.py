@@ -28,10 +28,14 @@ class DatabaseManager:
 
 
 class DBErrorHandler:
-    def __init__(self, error_level=ErrorLevel.DEFAULT, text="An unknown error has occurred.", exception=None):
-        self.error_level = error_level
+    def __init__(self, level=ErrorLevel.DEFAULT, text="An unknown error has occurred.", exception=None):
+        self.level = level
         self.text = text # readable text describing the issue
         self.exception = exception
+
+    @staticmethod
+    def check_if_error(val):
+        return isinstance(val, DBErrorHandler)
 
 
 # class CustomRowFactory:

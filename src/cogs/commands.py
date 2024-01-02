@@ -1,5 +1,6 @@
 from discord.ext import commands
 from utils.helpers import DiscordCtx, extract_id
+from database import DBErrorHandler
 
 
 class Commands(commands.Cog):
@@ -14,12 +15,12 @@ class Commands(commands.Cog):
         """
         contxt = DiscordCtx(ctx)
         err1 = self.bot.database.register_user(user_id=contxt.user_id)
-        if err1:
-            await contxt.report(err1.text, log_level="warning")
+        if isinstance(err1, DBErrorHandler):
+            await contxt.report(err1.text, log_level=err1.level)
             return
         err2 = self.bot.database.add_user_to_server(user_id=contxt.user_id, server_id=contxt.server_id)
-        if err2:
-            await contxt.report(err2.text, log_level="warning")
+        if isinstance(err2, DBErrorHandler):
+            await contxt.report(err2.text, log_level=err1.level)
             return
         await contxt.report("placeholder")
 
