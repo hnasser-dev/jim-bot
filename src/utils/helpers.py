@@ -16,10 +16,11 @@ MY_LOGGER = MyLogger(
 )
 
 
-class ErrorLevel(Enum):
+class ExecutionOutcome(Enum):
     ERROR = 2
     WARNING = 1
     DEFAULT = 0
+    SUCCESS = -1
 
 
 class DiscordCtx:
@@ -31,13 +32,13 @@ class DiscordCtx:
         self.server_name = str(ctx.guild)
         self.timestamp = str(curr_time_utc())
 
-    async def report(self, bot_message: str, ping=False, log_message=None, log_level=ErrorLevel.DEFAULT) -> None:
+    async def report(self, bot_message: str, ping=False, log_message=None, exec_outcome=ExecutionOutcome.DEFAULT) -> None:
         """
         Replies to the user with an appropriate (emojified) message
         Logs activity via a custom logger
         """
         # prepend an appropriate emoji (if required) then reply to the user
-        reply_msg = DiscordCtx.emojify_str(bot_message, log_level)
+        reply_msg = DiscordCtx.emojify_str(bot_message, exec_outcome)
         await self.reply_to_user(reply_msg, ping)
 
         """
@@ -47,7 +48,7 @@ class DiscordCtx:
             - successful action: logger.debug        
         """
         full_log_message = f"{log_message} ({self.ctx.message})" if log_message else f"{bot_message} ({self.ctx.message})"
-        match log_level.name:
+        match exec_outcome.name:
             case "ERROR":
                 MY_LOGGER.logger.error(full_log_message)
             case "WARNING":
@@ -62,15 +63,15 @@ class DiscordCtx:
             await self.ctx.reply(msg, mention_author=False)
 
     @staticmethod
-    def emojify_str(msg, log_level):
+    def emojify_str(msg, exec_outcome):
         """
-        Given a specified log_level, pre-pend an appropriate emoji (check mark or cross)
+        Given a specified exec_outcome, pre-pend an appropriate emoji (check mark or cross)
         to the specified msg
         """
-        match log_level:
-            case "error" | "warning":
+        match exec_outcome.name:
+            case "ERROR" | "WARNING":
                 emoji_str = ":x: "
-            case "debug":
+            case "DEFAULT":
                 emoji_str = ":white_check_mark: "
             case _:
                 emoji_str = ""

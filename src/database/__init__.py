@@ -1,5 +1,5 @@
 import sqlite3
-from utils.helpers import ErrorLevel
+from utils.helpers import ExecutionOutcome
 
 
 class DatabaseManager:
@@ -28,7 +28,7 @@ class DatabaseManager:
 
 
 class DBErrorHandler:
-    def __init__(self, level=ErrorLevel.DEFAULT, text="An unknown error has occurred.", exception=None):
+    def __init__(self, level=ExecutionOutcome.DEFAULT, text="An unknown error has occurred.", exception=None):
         self.level = level
         self.text = text # readable text describing the issue
         self.exception = exception

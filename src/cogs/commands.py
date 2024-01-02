@@ -14,15 +14,15 @@ class Commands(commands.Cog):
         Automatically joins the current server (joinserver), too
         """
         contxt = DiscordCtx(ctx)
-        err1 = self.bot.database.register_user(user_id=contxt.user_id)
-        if isinstance(err1, DBErrorHandler):
-            await contxt.report(err1.text, log_level=err1.level)
+        outcome1 = self.bot.database.register_user(user_id=contxt.user_id)
+        if isinstance(outcome1, DBErrorHandler):
+            await contxt.report(outcome1.text, exec_outcome=outcome1.level)
             return
-        err2 = self.bot.database.add_user_to_server(user_id=contxt.user_id, server_id=contxt.server_id)
-        if isinstance(err2, DBErrorHandler):
-            await contxt.report(err2.text, log_level=err1.level)
+        outcome2 = self.bot.database.add_user_to_server(user_id=contxt.user_id, server_id=contxt.server_id)
+        if isinstance(outcome2, DBErrorHandler):
+            await contxt.report(outcome2.text, exec_outcome=outcome2.level)
             return
-        await contxt.report("placeholder")
+        await contxt.report("Successfully registered.", exec_outcome=)
 
     @commands.command()
     async def deregister(self, ctx):
