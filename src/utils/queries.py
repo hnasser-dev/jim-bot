@@ -74,3 +74,19 @@ INNER JOIN servers
 on user_servers.server_id = servers.id
 WHERE users.id = :user_id
 """
+
+# sesh
+INSERT_VISIT_INTO_VISITS = """\
+INSERT INTO visits (user_id, timestamp)
+VALUES (?, ?)
+"""
+
+# get the number of visits/seshes a user has made
+SELECT_COUNT_USER_VISITS = """\
+SELECT
+COUNT(*) AS num_visits
+FROM users
+INNER JOIN gym_visits
+ON users.id = gym_visits.user_id
+WHERE user_id = :user_id
+"""

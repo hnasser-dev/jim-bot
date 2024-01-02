@@ -11,6 +11,8 @@ from utils.queries import (
     REMOVE_USER_FROM_ALL_SERVERS,
     SELECT_USER_IN_SERVER,
     SELECT_USER_SERVERS,
+    INSERT_VISIT_INTO_VISITS,
+    SELECT_COUNT_USER_VISITS,
 )
 from utils.helpers import DiscordCtx, ErrorLevel
 import sqlite3
@@ -19,6 +21,10 @@ import sqlite3
 class DatabaseCommands(DatabaseManager):
     def __init__(self, db_path):
         super().__init__(db_path)
+
+    def user_in_db(self, user_id) -> bool:
+        users = self.execute_query(SELECT_USER_IN_USERS, {"id": user_id})
+        return bool(users)
 
     def register_user(self, contxt: DiscordCtx):
         user_params = {
@@ -31,18 +37,17 @@ class DatabaseCommands(DatabaseManager):
             self.conn.commit()
         except sqlite3.IntegrityError as e:
             return DBErrorHandler(ErrorLevel.WARNING, f"User ({contxt.user_name}) already in the database.", e)
-        except Exception as f:
+        except sqlite3.Error as f:
             return DBErrorHandler(ErrorLevel.ERROR, exception=f)
 
     def deregister_user(self, contxt: DiscordCtx):
-        users = self.execute_query(SELECT_USER_IN_USERS, {"id": contxt.user_id})
-        if not users:
+        if not self.user_in_db(contxt.user_id):
             return DBErrorHandler(ErrorLevel.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             self.execute_query(REMOVE_USER_FROM_ALL_SERVERS, {"user_id": contxt.user_id})
             self.execute_query(MARK_USER_AS_INACTIVE, {"id": contxt.user_id})
             self.conn.commit()
-        except Exception as e:
+        except sqlite3.Error as e:
             return DBErrorHandler(ErrorLevel.ERROR, exception=e)
 
     def register_server(self, contxt: DiscordCtx):
@@ -56,7 +61,7 @@ class DatabaseCommands(DatabaseManager):
             self.conn.commit()
         except sqlite3.IntegrityError as e:
             return DBErrorHandler(ErrorLevel.WARNING, f"Server ({contxt.user_name}) already in the database.", e)
-        except Exception as f:
+        except sqlite3.Error as f:
             return DBErrorHandler(ErrorLevel.ERROR, exception=f)
 
     def add_user_to_server(self, contxt: DiscordCtx):
@@ -69,7 +74,7 @@ class DatabaseCommands(DatabaseManager):
             self.conn.commit()
         except sqlite3.IntegrityError as e:
             return DBErrorHandler(ErrorLevel.WARNING, f"User ({contxt.user_name}) already registred in this server.", e)
-        except Exception as f:
+        except sqlite3.Error as f:
             return DBErrorHandler(ErrorLevel.ERROR, exception=f)
 
     def remove_user_from_server(self, contxt: DiscordCtx):
@@ -79,7 +84,7 @@ class DatabaseCommands(DatabaseManager):
         }
         try:
             user_results = self.execute_query(SELECT_USER_IN_SERVER, params)
-        except Exception as e:
+        except sqlite3.Error as e:
             return DBErrorHandler(ErrorLevel.ERROR, exception=e)
         else:
             if len(user_results) < 1:
@@ -87,7 +92,7 @@ class DatabaseCommands(DatabaseManager):
         try:
             self.execute_query(REMOVE_USER_FROM_SERVER, params)
             self.conn.commit()
-        except Exception as f:
+        except sqlite3.Error as f:
             return DBErrorHandler(ErrorLevel.ERROR, exception=f)
 
     def remove_user_from_all_servers(self, contxt: DiscordCtx):
@@ -96,7 +101,7 @@ class DatabaseCommands(DatabaseManager):
         }
         try:
             user_results = self.execute_query(SELECT_USER_SERVERS, params)
-        except Exception as e:
+        except sqlite3.Error as e:
             return DBErrorHandler(ErrorLevel.ERROR, exception=e)
         else:
             if len(user_results) < 1:
@@ -104,14 +109,30 @@ class DatabaseCommands(DatabaseManager):
         try:
             self.execute_query(REMOVE_USER_FROM_ALL_SERVERS, params)
             self.conn.commit()
-        except Exception as f:
+        except sqlite3.Error as f:
             return DBErrorHandler(ErrorLevel.ERROR, exception=f)
 
     def add_sesh_for_user(self, contxt: DiscordCtx):
-        ...
+        user_params = {
+            "user_id": contxt.user_id,
+            "timestamp": contxt.timestamp
+        }
+        if not self.user_in_db(contxt.user_id):
+            return DBErrorHandler(ErrorLevel.WARNING, f"User ({contxt.user_name}) not in the database.")
+        try:
+            self.execute_query(INSERT_VISIT_INTO_VISITS, user_params)
+            self.conn.commit()
+        except sqlite3.Error as e:
+            return DBErrorHandler(ErrorLevel.ERROR, exception=e)
 
-    def get_user_visits(self, contxt: DiscordCtx):
-        ...
+    def get_user_visits(self, contxt: DiscordCtx) -> int|DBErrorHandler:
+        user_params = {
+            "user_id": contxt.user_id
+        }
+        if not self.user_in_db(contxt.user_id):
+            return DBErrorHandler(ErrorLevel.WARNING, f"User ({contxt.user_name}) not in the database.")
+        num_visits = self.execute_query(SELECT_COUNT_USER_VISITS, user_params)[0]
+        return num_visits
 
     def graphify(self, contxt: DiscordCtx):
         ...
