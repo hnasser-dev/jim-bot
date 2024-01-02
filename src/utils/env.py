@@ -20,3 +20,4 @@ ENV_PY_PATH = Path(__file__)
 SRC_DIR_PATH = ENV_PY_PATH.parent.parent
 TEST_DIR_PATH = os.path.join(SRC_DIR_PATH.parent, "tests")
 LOG_FILE_PATH = os.path.join(SRC_DIR_PATH, f"logs/bot.log")
+DB_PATH = os.path.join(SRC_DIR_PATH, "database/bot.db")

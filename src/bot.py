@@ -1,12 +1,14 @@
 from discord import Intents
-from utils.env import (
-    BOT_TOKEN,
-    BOT_TEST_TOKEN,
-    DEBUG
-)
 from discord.ext import commands
 from pathlib import Path
 import os
+from utils.env import (
+    BOT_TOKEN,
+    BOT_TEST_TOKEN,
+    DEBUG,
+    DB_PATH
+)
+from database import DatabaseManager
 
 
 class MyBot(commands.Bot):
@@ -16,6 +18,7 @@ class MyBot(commands.Bot):
             description=description,
             intents=intents
         )
+        self.database = DatabaseManager(DB_PATH)
 
     async def on_ready(self):
         print(f"Logged in as {self.user}.")
@@ -29,13 +32,14 @@ class MyBot(commands.Bot):
                 print(extension_name)
                 try:
                     await self.load_extension(f"cogs.{extension_name}")
-                except Exception as e:
+                except commands.ExtensionError as e:
                     print(e)
                 else:
                     print(f"{extension_name} loaded")
 
     async def setup_hook(self):
         """ Runs when the bot first starts up """
+        await self.database.connect()
         await self.load_cogs()
 
 
