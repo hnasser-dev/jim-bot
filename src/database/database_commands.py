@@ -12,7 +12,7 @@ from utils.helpers import DiscordCtx, ErrorLevel
 import sqlite3
 
 
-class DatabaseCommandManager(DatabaseManager):
+class DatabaseCommands(DatabaseManager):
     def __init__(self, db_path):
         super().__init__(db_path)
 

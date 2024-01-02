@@ -1,6 +1,5 @@
 from discord.ext import commands
 from utils.helpers import DiscordCtx, extract_id
-import utils.funcs as funcs
 
 
 class Commands(commands.Cog):

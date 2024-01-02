@@ -8,7 +8,7 @@ from utils.env import (
     DEBUG,
     DB_PATH
 )
-from utils.commands import DatabaseCommandManager
+from database.database_commands import DatabaseCommands
 
 
 class MyBot(commands.Bot):
@@ -18,7 +18,7 @@ class MyBot(commands.Bot):
             description=description,
             intents=intents
         )
-        self.database = DatabaseCommandManager(DB_PATH)
+        self.database = DatabaseCommands(DB_PATH)
 
     async def on_ready(self):
         print(f"Logged in as {self.user}.")
