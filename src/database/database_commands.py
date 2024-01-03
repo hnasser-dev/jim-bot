@@ -75,13 +75,13 @@ class DatabaseCommands(DatabaseManager):
         }
         if not self.server_in_db(contxt.server_id):
             return DatabaseError(ExecutionOutcome.WARNING,
-                f"This is not a registered server. User `{BOT_PREFIX}addserver` to register this server first."
+                f"This is not a registered server. Use `{BOT_PREFIX}registerserver` to register this server first."
             )
         try:
             self.execute_query(ADD_USER_TO_SERVER, params)
             self.conn.commit()
         except sqlite3.IntegrityError as e:
-            return DatabaseError(ExecutionOutcome.WARNING, f"User ({contxt.user_name}) already registred in this server.", e)
+            return DatabaseError(ExecutionOutcome.WARNING, f"User ({contxt.user_name}) already registered in this server.", e)
         except sqlite3.Error as f:
             return DatabaseError(ExecutionOutcome.ERROR, exception=f)
 

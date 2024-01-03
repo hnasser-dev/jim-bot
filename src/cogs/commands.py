@@ -41,7 +41,7 @@ class Commands(commands.Cog):
         await contxt.reply_to_user("Successfully deregistered.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
-    async def addserver(self, ctx):
+    async def registerserver(self, ctx):
         """
         Add the server to the database
         """
