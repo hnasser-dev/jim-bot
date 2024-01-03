@@ -39,7 +39,7 @@ class DatabaseManager:
         return self.cursor.fetchall()
 
 
-class DBErrorHandler:
+class DatabaseError:
     def __init__(self, level=ExecutionOutcome.DEFAULT, text="An unknown error has occurred.", exception=None):
         self.level = level
         self.text = text # readable text describing the issue
@@ -58,7 +58,7 @@ class DBErrorHandler:
 
     @staticmethod
     def check_if_error(val):
-        return isinstance(val, DBErrorHandler)
+        return isinstance(val, DatabaseError)
 
 
 # class CustomRowFactory:

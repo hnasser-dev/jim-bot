@@ -1,6 +1,6 @@
 from discord.ext import commands
 from utils.helpers import DiscordCtx, ExecutionOutcome, extract_id
-from database import DBErrorHandler
+from database import DatabaseError
 
 
 class Commands(commands.Cog):
@@ -15,11 +15,11 @@ class Commands(commands.Cog):
         """
         contxt = DiscordCtx(ctx)
         outcome1 = self.bot.database.register_user(contxt=contxt)
-        if isinstance(outcome1, DBErrorHandler):
+        if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
             return
         outcome2 = self.bot.database.add_user_to_server(contxt=contxt)
-        if isinstance(outcome2, DBErrorHandler):
+        if isinstance(outcome2, DatabaseError):
             await contxt.reply_to_user(outcome2.text, exec_outcome=outcome2.level)
             return
         await contxt.reply_to_user("Successfully registered.", exec_outcome=ExecutionOutcome.SUCCESS)
@@ -31,11 +31,11 @@ class Commands(commands.Cog):
         """
         contxt = DiscordCtx(ctx)
         outcome1 = self.bot.database.mark_user_as_inactive(contxt=contxt)
-        if isinstance(outcome1, DBErrorHandler):
+        if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
             return
         outcome2 = self.bot.database.remove_user_from_all_servers(contxt=contxt)
-        if isinstance(outcome2, DBErrorHandler):
+        if isinstance(outcome2, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
             return
         await contxt.reply_to_user("Successfully deregistered.", exec_outcome=ExecutionOutcome.SUCCESS)
@@ -47,7 +47,7 @@ class Commands(commands.Cog):
         """
         contxt = DiscordCtx(ctx)
         outcome1 = self.bot.database.register_server(contxt=contxt)
-        if isinstance(outcome1, DBErrorHandler):
+        if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
             return
         await contxt.reply_to_user(f"Successfully registered {contxt.server_name} as a server.")
@@ -59,7 +59,7 @@ class Commands(commands.Cog):
         """
         contxt = DiscordCtx(ctx)
         outcome1 = self.bot.database.add_user_to_server(contxt=contxt)
-        if isinstance(outcome1, DBErrorHandler):
+        if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
         await contxt.reply_to_user("placeholder")
 
