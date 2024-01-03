@@ -61,7 +61,7 @@ class Commands(commands.Cog):
         outcome1 = self.bot.database.add_user_to_server(contxt=contxt)
         if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
-        await contxt.reply_to_user("placeholder")
+        await contxt.reply_to_user("Successfully registered in this server.")
 
     @commands.command()
     async def leaveserver(self, ctx):
@@ -69,8 +69,10 @@ class Commands(commands.Cog):
         Disassociate yourself from the current server
         """
         contxt = DiscordCtx(ctx)
-        self.bot.database.remove_user_from_server(contxt=contxt)
-        await contxt.reply_to_user("placeholder")
+        outcome1 = self.bot.database.remove_user_from_server(contxt=contxt)
+        if isinstance(outcome1, DatabaseError):
+            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        await contxt.reply_to_user("Successfully deregistered from this server.")
 
     @commands.command()
     async def timezone(self, ctx):
@@ -99,8 +101,10 @@ class Commands(commands.Cog):
     @commands.command()
     async def sesh(self, ctx):
         contxt = DiscordCtx(ctx)
-        self.bot.database.add_sesh_for_user(contxt=contxt)
-        await contxt.reply_to_user("placeholder")
+        outcome1 = self.bot.database.add_sesh_for_user(contxt=contxt)
+        if isinstance(outcome1, DatabaseError):
+            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        await contxt.reply_to_user(f"Session added! You have now been to the gym {outcome1} times.")
 
     @commands.command()
     async def seshterday(self, ctx):

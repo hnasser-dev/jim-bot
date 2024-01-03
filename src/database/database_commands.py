@@ -132,6 +132,7 @@ class DatabaseCommands(DatabaseManager):
             self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(ExecutionOutcome.ERROR, exception=e)
+        return self.get_user_visits(contxt=contxt) # return the updated number of visits
 
     def get_user_visits(self, contxt: DiscordCtx) -> int|DatabaseError:
         user_params = {
