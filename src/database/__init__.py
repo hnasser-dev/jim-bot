@@ -1,5 +1,5 @@
 import sqlite3
-from utils.helpers import ExecutionOutcome
+from utils.helpers import ExecutionOutcome, DiscordCtx
 from utils.globals import LOG_FILE_PATH
 
 
@@ -40,14 +40,15 @@ class DatabaseManager:
 
 
 class DatabaseError:
-    def __init__(self, level=ExecutionOutcome.DEFAULT, text="An unknown error has occurred.", exception=None):
+    def __init__(self, contxt:DiscordCtx, level=ExecutionOutcome.DEFAULT, text="An unknown error has occurred.", exception=None):
         self.level = level
         self.text = text # readable text describing the issue
         self.exception = exception
+        self.command_message = contxt.ctx.message
         self.log_error() # when creating an object it should automatically log it
 
     def log_error(self):
-        log_msg = f"{self.text}/{self.exception if self.exception else ''}" 
+        log_msg = f"{self.command_message}/{self.text}/{self.exception if self.exception else ''}"
         match self.level.name:
             case "ERROR":
                 MY_LOGGER.logger.error(log_msg)
