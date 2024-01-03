@@ -2,7 +2,7 @@ from discord import Intents
 from discord.ext import commands
 from pathlib import Path
 import os
-from utils.env import (
+from utils.globals import (
     BOT_TOKEN,
     BOT_TEST_TOKEN,
     DEBUG,

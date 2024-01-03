@@ -1,5 +1,17 @@
 import sqlite3
 from utils.helpers import ExecutionOutcome
+from utils.globals import LOG_FILE_PATH
+
+
+""" Logging Configuration """
+from logs.log_handler import MyLogger
+from pathlib import Path
+file_stem = Path(__file__).stem # get name of the current file (without .py)
+src_dir = Path(__file__).parent
+MY_LOGGER = MyLogger(
+    file_name=file_stem,
+    log_file_path=LOG_FILE_PATH
+)
 
 
 class DatabaseManager:
@@ -32,6 +44,17 @@ class DBErrorHandler:
         self.level = level
         self.text = text # readable text describing the issue
         self.exception = exception
+        self.log_error() # when creating an object it should automatically log it
+
+    def log_error(self):
+        log_msg = f"{self.text}/{self.exception if self.exception else ''}" 
+        match self.level.name:
+            case "ERROR":
+                MY_LOGGER.logger.error(log_msg)
+            case "WARNING":
+                MY_LOGGER.logger.warning(log_msg)
+            case _:
+                MY_LOGGER.logger.debug(log_msg)
 
     @staticmethod
     def check_if_error(val):

@@ -2,7 +2,7 @@ from discord.ext import commands
 from datetime import datetime
 import pytz
 from enum import Enum
-from utils.env import LOG_FILE_PATH
+from utils.globals import LOG_FILE_PATH
 
 
 """ Logging Configuration """
@@ -32,35 +32,14 @@ class DiscordCtx:
         self.server_name = str(ctx.guild)
         self.timestamp = str(curr_time_utc())
 
-    async def report(self, bot_message: str, ping=False, log_message=None, exec_outcome=ExecutionOutcome.DEFAULT) -> None:
+    async def reply_to_user(self, message: str, exec_outcome=ExecutionOutcome.DEFAULT, ping=False) -> None:
         """
         Replies to the user with an appropriate (emojified) message
         Logs activity via a custom logger
         """
         # prepend an appropriate emoji (if required) then reply to the user
-        reply_msg = DiscordCtx.emojify_str(bot_message, exec_outcome)
-        await self.reply_to_user(reply_msg, ping)
-
-        """
-        logging:
-            - error: logger.error
-            - unsuccessful action: logger.warning
-            - successful action: logger.debug        
-        """
-        full_log_message = f"{log_message} ({self.ctx.message})" if log_message else f"{bot_message} ({self.ctx.message})"
-        match exec_outcome.name:
-            case "ERROR":
-                MY_LOGGER.logger.error(full_log_message)
-            case "WARNING":
-                MY_LOGGER.logger.warning(full_log_message)
-            case _:
-                MY_LOGGER.logger.debug(full_log_message)
-
-    async def reply_to_user(self, msg=None, ping=False):
-        if ping:
-            await self.ctx.reply(msg, mention_author=True)
-        else:
-            await self.ctx.reply(msg, mention_author=False)
+        reply_msg = DiscordCtx.emojify_str(message, exec_outcome)
+        await self.ctx.reply(reply_msg, mention_author=ping)
 
     @staticmethod
     def emojify_str(msg, exec_outcome):

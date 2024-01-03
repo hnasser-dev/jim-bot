@@ -15,6 +15,7 @@ from utils.queries import (
     SELECT_COUNT_USER_VISITS,
 )
 from utils.helpers import DiscordCtx, ExecutionOutcome
+from utils.globals import BOT_PREFIX
 import sqlite3
 
 
@@ -44,11 +45,10 @@ class DatabaseCommands(DatabaseManager):
         except sqlite3.Error as f:
             return DBErrorHandler(ExecutionOutcome.ERROR, exception=f)
 
-    def deregister_user(self, contxt: DiscordCtx):
+    def mark_user_as_inactive(self, contxt: DiscordCtx):
         if not self.user_in_db(contxt.user_id):
             return DBErrorHandler(ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
-            self.execute_query(REMOVE_USER_FROM_ALL_SERVERS, {"user_id": contxt.user_id})
             self.execute_query(MARK_USER_AS_INACTIVE, {"id": contxt.user_id})
             self.conn.commit()
         except sqlite3.Error as e:
@@ -64,7 +64,7 @@ class DatabaseCommands(DatabaseManager):
             self.execute_query(INSERT_SERVER_INTO_SERVERS, server_params)
             self.conn.commit()
         except sqlite3.IntegrityError as e:
-            return DBErrorHandler(ExecutionOutcome.WARNING, f"Server ({contxt.user_name}) already in the database.", e)
+            return DBErrorHandler(ExecutionOutcome.WARNING, f"This server is already registered.", e)
         except sqlite3.Error as f:
             return DBErrorHandler(ExecutionOutcome.ERROR, exception=f)
 
@@ -74,7 +74,9 @@ class DatabaseCommands(DatabaseManager):
             "server_id": contxt.server_id,
         }
         if not self.server_in_db(contxt.server_id):
-            return DBErrorHandler(ExecutionOutcome.WARNING, f"User ({contxt.server_name}) is not a registered server.")
+            return DBErrorHandler(ExecutionOutcome.WARNING,
+                f"This is not a registered server. User `{BOT_PREFIX}addserver` to register this server first."
+            )
         try:
             self.execute_query(ADD_USER_TO_SERVER, params)
             self.conn.commit()
