@@ -1,4 +1,4 @@
-from database import DatabaseManager, DatabaseError
+from database import DatabaseManager, DatabaseError, ParseError
 from utils.queries import (
     SELECT_USER_IN_USERS,
     INSERT_USER_INTO_USERS,
@@ -14,7 +14,7 @@ from utils.queries import (
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
 )
-from utils.helpers import DiscordCtx, ExecutionOutcome
+from utils.helpers import DiscordCtx, ExecutionOutcome, DayOffset
 from utils.globals import BOT_PREFIX
 import sqlite3
 
@@ -120,10 +120,15 @@ class DatabaseCommands(DatabaseManager):
         except sqlite3.Error as f:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=f)
 
-    def add_sesh_for_user(self, contxt: DiscordCtx):
+    def add_sesh_for_user(self, contxt: DiscordCtx, offset=0):
+        try:
+            day_offset = DayOffset(offset)
+        except ValueError as e: # if not a valid value
+            return ParseError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
+        timestamp = contxt.timestamp_offset(offset=day_offset.value)
         user_params = {
             "user_id": contxt.user_id,
-            "timestamp": contxt.timestamp
+            "timestamp": timestamp
         }
         if not self.user_in_db(contxt.user_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")

@@ -1,6 +1,6 @@
 from discord.ext import commands
 from utils.helpers import DiscordCtx, ExecutionOutcome, extract_id
-from database import DatabaseError
+from database import DatabaseError, ParseError
 
 
 class Commands(commands.Cog):
@@ -50,7 +50,7 @@ class Commands(commands.Cog):
         if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
             return
-        await contxt.reply_to_user(f"Successfully registered {contxt.server_name} as a server.")
+        await contxt.reply_to_user(f"Successfully registered {contxt.server_name} as a server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def joinserver(self, ctx):
@@ -61,7 +61,7 @@ class Commands(commands.Cog):
         outcome1 = self.bot.database.add_user_to_server(contxt=contxt)
         if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
-        await contxt.reply_to_user("Successfully registered in this server.")
+        await contxt.reply_to_user("Successfully registered in this server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def leaveserver(self, ctx):
@@ -72,7 +72,7 @@ class Commands(commands.Cog):
         outcome1 = self.bot.database.remove_user_from_server(contxt=contxt)
         if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
-        await contxt.reply_to_user("Successfully deregistered from this server.")
+        await contxt.reply_to_user("Successfully deregistered from this server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def timezone(self, ctx):
@@ -84,7 +84,7 @@ class Commands(commands.Cog):
     async def settimezone(self, timezone, ctx):
         contxt = DiscordCtx(ctx)
         new_timezone = self.bot.database.set_timezone(contxt=contxt)
-        await contxt.reply_to_user(f"Timezone set to {new_timezone}.")
+        await contxt.reply_to_user(f"Timezone set to {new_timezone}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def updatename(self, ctx):
@@ -94,26 +94,34 @@ class Commands(commands.Cog):
         contxt = DiscordCtx(ctx)
         old_name, new_name = self.bot.database.update_name(contxt=contxt)
         if old_name == new_name:
-            await contxt.reply_to_user(f"Display name already set to {new_name}.")
+            await contxt.reply_to_user(f"Display name already set to {new_name}.", exec_outcome=ExecutionOutcome.WARNING)
         else:
-            await contxt.reply_to_user(f"Display name updated to {new_name}.")
+            await contxt.reply_to_user(f"Display name updated to {new_name}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
-    async def sesh(self, ctx):
+    async def sesh(self, ctx, offset=None):
         contxt = DiscordCtx(ctx)
+        if isinstance(offset, int):
+            if offset > 7 or offset < 0:
+                err = ParseError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
+                await contxt.reply_to_user(err.text, exec_outcome=err.level)
+                return
+            outcome1 = self.bot.database.add_sesh_for_user(contxt=contxt)
+            
+
+
+
         outcome1 = self.bot.database.add_sesh_for_user(contxt=contxt)
         if isinstance(outcome1, DatabaseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
-        await contxt.reply_to_user(f"Session added! You have now been to the gym {outcome1} times.")
+        await contxt.reply_to_user(f"Session added! You have now been to the gym {outcome1} times.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def seshterday(self, ctx):
         """
         Alias for 'sesh yesterday'
         """
-        contxt = DiscordCtx(ctx)
-        self.bot.database.add_sesh_for_user(contxt=contxt, day_offset=-1)
-        await contxt.reply_to_user("placeholder")
+        await self.sesh(ctx, offset=-1)
 
     @commands.command()
     async def graph(self, ctx, other=None):

@@ -23,6 +23,17 @@ class ExecutionOutcome(Enum):
     SUCCESS = -1
 
 
+class DayOffset(Enum):
+    TODAY = 0
+    YESTERDAY = -1
+    TWO_DAYS_AGO = -2
+    THREE_DAYS_AGO = -3
+    FOUR_DAYS_AGO = -4
+    FIVE_DAYS_AGO = -5
+    SIX_DAYS_AGO = -6
+    SEVEN_DAYS_AGO = -7
+
+
 class DiscordCtx:
     def __init__(self, ctx: commands.Context, *args):
         self.ctx = ctx # for accessing attributes of the original ctx object
@@ -40,6 +51,9 @@ class DiscordCtx:
         # prepend an appropriate emoji (if required) then reply to the user
         reply_msg = DiscordCtx.emojify_str(message, exec_outcome)
         await self.ctx.reply(reply_msg, mention_author=ping)
+
+    def timestamp_offset(self):
+        dt = datetime.strptime(self.timestamp, "")
 
     @staticmethod
     def emojify_str(msg, exec_outcome):

@@ -39,12 +39,12 @@ class DatabaseManager:
         return self.cursor.fetchall()
 
 
-class DatabaseError:
-    def __init__(self, contxt:DiscordCtx, level=ExecutionOutcome.DEFAULT, text="An unknown error has occurred.", exception=None):
+class ExecutionError:
+    def __init__(self, contxt=None, level=ExecutionOutcome.DEFAULT, text="An unknown error has occurred.", exception=None):
         self.level = level
         self.text = text # readable text describing the issue
         self.exception = exception
-        self.command_message = contxt.ctx.message
+        self.command_message = contxt.ctx.message if contxt else ""
         self.log_error() # when creating an object it should automatically log it
 
     def log_error(self):
@@ -60,6 +60,14 @@ class DatabaseError:
     @staticmethod
     def check_if_error(val):
         return isinstance(val, DatabaseError)
+
+
+class DatabaseError(ExecutionError):
+    pass
+
+
+class ParseError(ExecutionError):
+    pass
 
 
 # class CustomRowFactory:
