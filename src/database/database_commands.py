@@ -25,6 +25,10 @@ class DatabaseCommands(DatabaseManager):
     def user_in_db(self, user_id) -> bool:
         users = self.execute_query(SELECT_USER_IN_USERS, {"id": user_id})
         return bool(users)
+    
+    def server_in_db(self, server_id) -> bool:
+        servers = self.execute_query(SELECT_SERVER_IN_SERVERS, {"id": server_id})
+        return bool(servers)
 
     def register_user(self, contxt: DiscordCtx):
         user_params = {
@@ -69,6 +73,8 @@ class DatabaseCommands(DatabaseManager):
             "user_id": contxt.user_id,
             "server_id": contxt.server_id,
         }
+        if not self.server_in_db(contxt.server_id):
+            return DBErrorHandler(ExecutionOutcome.WARNING, f"User ({contxt.server_name}) is not a registered server.")
         try:
             self.execute_query(ADD_USER_TO_SERVER, params)
             self.conn.commit()
