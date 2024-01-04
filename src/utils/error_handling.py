@@ -36,5 +36,5 @@ class DatabaseError(ExecutionError):
     pass
 
 
-class ParseError(ExecutionError):
+class LogicError(ExecutionError):
     pass

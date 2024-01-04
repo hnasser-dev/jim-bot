@@ -1,24 +1,26 @@
 from src.database import DatabaseManager
-from src.utils.error_handling import DatabaseError, ParseError
+from src.utils.error_handling import DatabaseError, LogicError
 from src.utils.helpers import DiscordCtx, ExecutionOutcome, DayOffset
 from src.utils.globals import BOT_PREFIX
 import sqlite3
 from src.utils.queries import (
     SELECT_USER_IN_USERS,
     INSERT_USER_INTO_USERS,
+    REMOVE_USER_FROM_USERS,
     SELECT_SERVER_IN_SERVERS,
     INSERT_SERVER_INTO_SERVERS,
     ADD_USER_TO_SERVER,
-    MARK_USER_AS_INACTIVE,
     ADD_USER_TO_SERVER,
     REMOVE_USER_FROM_SERVER,
     REMOVE_USER_FROM_ALL_SERVERS,
     SELECT_USER_IN_SERVER,
     SELECT_USER_SERVERS,
+    SELECT_USER_TIMEZONE,
+    UPDATE_TIMEZONE_IN_USERS,
+    UPDATE_NAME_IN_USERS,
+    SELECT_USER_NAME_IN_USERS,
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
-    SELECT_USER_TIMEZONE,
-    UPDATE_TIMEZONE_IN_USERS
 )
 
 
@@ -34,7 +36,7 @@ class DatabaseCommands(DatabaseManager):
         servers = self.execute_query(SELECT_SERVER_IN_SERVERS, {"id": server_id})
         return bool(servers)
 
-    def register_user(self, contxt: DiscordCtx):
+    def add_user_to_users(self, contxt: DiscordCtx):
         user_params = {
             "id": contxt.user_id,
             "name": contxt.user_name,
@@ -48,11 +50,11 @@ class DatabaseCommands(DatabaseManager):
         except sqlite3.Error as f:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=f)
 
-    def mark_user_as_inactive(self, contxt: DiscordCtx):
+    def remove_user_from_users(self, contxt: DiscordCtx):
         if not self.user_in_db(contxt.user_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
-            self.execute_query(MARK_USER_AS_INACTIVE, {"id": contxt.user_id})
+            self.execute_query(REMOVE_USER_FROM_USERS, {"id": contxt.user_id})
             self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
@@ -92,7 +94,7 @@ class DatabaseCommands(DatabaseManager):
         params = {
             "user_id": contxt.user_id,
             "server_id": contxt.server_id,
-        }
+        }            
         try:
             user_results = self.execute_query(SELECT_USER_IN_SERVER, params)
         except sqlite3.Error as e:
@@ -129,22 +131,38 @@ class DatabaseCommands(DatabaseManager):
         timezone = self.execute_query(SELECT_USER_TIMEZONE, {"id": contxt.user_id})
         return timezone
 
-    def set_timezone(self, contxt: DiscordCtx, timezone):
+    def set_timezone(self, contxt: DiscordCtx, timezone: float):
         if not self.user_in_db(contxt.user_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
-        # TODO - parse the timezone the user provided
         try:
-            self.execute_query(UPDATE_TIMEZONE_IN_USERS, {"id": contxt.user_id})
+            self.execute_query(UPDATE_TIMEZONE_IN_USERS, {"id": contxt.user_id, "timezone": timezone})
             self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return timezone
 
+    def update_name(self, contxt: DiscordCtx):
+        try:
+            user_results = self.execute_query(SELECT_USER_NAME_IN_USERS, {"id": contxt.user_id})
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        else:
+            if len(user_results) < 1:
+                return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) is not registered in this server.")
+        old_username = user_results[0]
+        if old_username == contxt.user_name:
+            return LogicError(contxt, ExecutionOutcome.ERROR, f"Your current username ({contxt.user_name}) is the same as your currently-registered username ({old_username}).")
+        try:
+            self.execute_query(UPDATE_NAME_IN_USERS, {"id": contxt.user_id})
+            self.conn.commit()
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+
     def add_sesh_for_user(self, contxt: DiscordCtx, offset=0):
         try:
             day_offset = DayOffset(offset)
         except ValueError as e: # if not a valid value
-            return ParseError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
+            return LogicError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
         timestamp = contxt.get_timestamp_str(day_offset=day_offset.value)
         user_params = {
             "user_id": contxt.user_id,

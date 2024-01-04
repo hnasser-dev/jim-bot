@@ -9,8 +9,14 @@ SELECT * FROM users WHERE id = :id
 
 # register (add user into db)
 INSERT_USER_INTO_USERS = """\
-INSERT INTO users (id, name, join_time, active)
-VALUES (:id, :name, :join_time, :active)
+INSERT INTO users (id, name, join_time)
+VALUES (:id, :name, :join_time)
+"""
+
+# remove user from db
+REMOVE_USER_FROM_USERS = """\
+DELETE FROM users
+WHERE id = :id    
 """
 
 # selects a server by its id
@@ -42,13 +48,6 @@ DELETE FROM user_servers
 WHERE user_id = :user_id    
 """
 
-# mark user as inactive
-MARK_USER_AS_INACTIVE = """\
-UPDATE users
-SET active = 0
-WHERE id = :id    
-"""
-
 # check if a user is registered in a server
 SELECT_USER_IN_SERVER = """\
 SELECT * FROM user_servers WHERE user_id = :user_id AND server_id = :server_id
@@ -62,8 +61,15 @@ SELECT timezone FROM users WHERE id = :id
 # timezone (update)
 UPDATE_TIMEZONE_IN_USERS = """\
 UPDATE users
-SET timezone = ?
-WHERE id = ?    
+SET timezone = :timezone
+WHERE id = :id    
+"""
+
+# update a user's name in users
+UPDATE_NAME_IN_USERS = """\
+UPDATE users
+SET name = :name
+WHERE id = :id
 """
 
 # show all the servers that a user is registered in
@@ -84,7 +90,7 @@ WHERE users.id = :user_id
 # sesh
 INSERT_VISIT_INTO_VISITS = """\
 INSERT INTO visits (user_id, timestamp)
-VALUES (?, ?)
+VALUES (:user_id, :timestamp)
 """
 
 # get the number of visits/seshes a user has made
@@ -95,4 +101,10 @@ FROM users
 INNER JOIN gym_visits
 ON users.id = gym_visits.user_id
 WHERE user_id = :user_id
+"""
+
+# retrieve a user's name
+SELECT_USER_NAME_IN_USERS = """\
+SELECT name FROM users
+WHERE id = :id
 """
