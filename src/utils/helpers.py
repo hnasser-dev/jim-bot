@@ -1,5 +1,5 @@
 from discord.ext import commands
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from enum import Enum
 from src.utils.error_handling import ExecutionOutcome
@@ -17,13 +17,14 @@ class DayOffset(Enum):
 
 
 class DiscordCtx:
-    def __init__(self, ctx: commands.Context, *args):
+    def __init__(self, ctx: commands.Context, mentioned_user=None):
         self.ctx = ctx # for accessing attributes of the original ctx object
         self.user_id = str(ctx.author.id)
         self.user_name = str(ctx.author.name)
-        self.server_id = str(ctx.guild.id)
+        self.server_id = str(ctx.guild.id) if ctx.guild else None
         self.server_name = str(ctx.guild)
-        self.timestamp = str(curr_time_utc())
+        self.timestamp = self.get_timestamp_str(initial=True)
+        self.mentioned_user = DiscordCtx.extract_id(mentioned_user) if mentioned_user else None
 
     async def reply_to_user(self, message: str, exec_outcome=ExecutionOutcome.DEFAULT, ping=False) -> None:
         """
@@ -34,8 +35,12 @@ class DiscordCtx:
         reply_msg = DiscordCtx.emojify_str(message, exec_outcome)
         await self.ctx.reply(reply_msg, mention_author=ping)
 
-    def timestamp_offset(self):
-        dt = datetime.strptime(self.timestamp, "")
+    def get_timestamp_str(self, initial=False, day_offset=0):
+        date_format = "%Y-%m-%d %H:%M:%S"
+        if initial: # if called from init
+            return datetime.utcnow().strftime(date_format)
+        timestamp = datetime.strptime(self.timestamp, date_format) + timedelta(day_offset)
+        return timestamp.strftime(date_format)
 
     @staticmethod
     def emojify_str(msg, exec_outcome):
@@ -51,26 +56,10 @@ class DiscordCtx:
             case _:
                 emoji_str = ""
         return emoji_str + msg
-
-
-""" Helper Functions - used for multiple commands """
-
-def curr_time_utc() -> datetime:
-    """
-    Return current datetime for UTC.
-    """
-    return datetime.now(pytz.timezone('UTC'))
-
-
-def curr_time_local(tz) -> datetime:
-    """
-    Return current datetime for for a given IANA timezone.
-    """
-    return datetime.now(pytz.timezone(tz))
-
-
-def extract_id(ping_text:str) -> str:
-    """
-    Convert <@id> to <id>, as a string.
-    """
-    return ping_text.replace('<', '').replace('>', '').replace('@', '')
+    
+    @staticmethod
+    def extract_id(ping_text:str) -> str:
+        """
+        Convert <@id> to <id>, as a string.
+        """
+        return ping_text.replace('<', '').replace('>', '').replace('@', '')
