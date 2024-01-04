@@ -24,12 +24,6 @@ INSERT INTO servers (id, name, added_time)
 VALUES (:id, :name, :added_time)
 """
 
-# register (with server)
-ADD_USER_TO_SERVER = """\
-INSERT INTO user_servers (user_id, server_id, registered_time)
-VALUES (:user_id, :server_id, :registered_time)
-"""
-
 # register user with server
 ADD_USER_TO_SERVER = """\
 INSERT INTO user_servers (user_id, server_id, registered_time)
@@ -58,6 +52,18 @@ WHERE id = :id
 # check if a user is registered in a server
 SELECT_USER_IN_SERVER = """\
 SELECT * FROM user_servers WHERE user_id = :user_id AND server_id = :server_id
+"""
+
+# timezone
+SELECT_USER_TIMEZONE = """\
+SELECT timezone FROM users WHERE id = :id
+"""
+
+# timezone (update)
+UPDATE_TIMEZONE_IN_USERS = """\
+UPDATE users
+SET timezone = ?
+WHERE id = ?    
 """
 
 # show all the servers that a user is registered in

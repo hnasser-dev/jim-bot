@@ -16,6 +16,19 @@ class DayOffset(Enum):
     SEVEN_DAYS_AGO = -7
 
 
+class DBTimezone:
+    timezone_code_url = 
+    def __init__(self, code):
+        self.code = code.upper()
+        self.valid = self.check_valid_code()
+        self.tz = pytz.timezone(self.code) if self.valid else None
+
+    def check_valid_code(self):
+        if self.code in pytz.all_timezones_set:
+            return True
+        return False
+
+
 class DiscordCtx:
     def __init__(self, ctx: commands.Context, mentioned_user=None):
         self.ctx = ctx # for accessing attributes of the original ctx object

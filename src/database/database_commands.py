@@ -17,6 +17,8 @@ from src.utils.queries import (
     SELECT_USER_SERVERS,
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
+    SELECT_USER_TIMEZONE,
+    UPDATE_TIMEZONE_IN_USERS
 )
 
 
@@ -120,6 +122,23 @@ class DatabaseCommands(DatabaseManager):
             self.conn.commit()
         except sqlite3.Error as f:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=f)
+
+    def get_timezone(self, contxt: DiscordCtx):
+        if not self.user_in_db(contxt.user_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
+        timezone = self.execute_query(SELECT_USER_TIMEZONE, {"id": contxt.user_id})
+        return timezone
+
+    def set_timezone(self, contxt: DiscordCtx, timezone):
+        if not self.user_in_db(contxt.user_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
+        # TODO - parse the timezone the user provided
+        try:
+            self.execute_query(UPDATE_TIMEZONE_IN_USERS, {"id": contxt.user_id})
+            self.conn.commit()
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        return timezone
 
     def add_sesh_for_user(self, contxt: DiscordCtx, offset=0):
         try:

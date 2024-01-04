@@ -1,6 +1,8 @@
 from discord.ext import commands
-from src.utils.helpers import DiscordCtx, ExecutionOutcome, extract_id
+from src.utils.helpers import DiscordCtx, ExecutionOutcome, DBTimezone
 from src.utils.error_handling import DatabaseError, ParseError
+from asyncio import TimeoutError
+from src.utils.globals import BOT_PREFIX
 
 
 class Commands(commands.Cog):
@@ -46,9 +48,9 @@ class Commands(commands.Cog):
         Add the server to the database
         """
         contxt = DiscordCtx(ctx)
-        outcome1 = self.bot.database.register_server(contxt=contxt)
-        if isinstance(outcome1, DatabaseError):
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        outcome = self.bot.database.register_server(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
         await contxt.reply_to_user(f"Successfully registered {contxt.server_name} as a server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
@@ -58,9 +60,10 @@ class Commands(commands.Cog):
         Associate yourself with the current server
         """
         contxt = DiscordCtx(ctx)
-        outcome1 = self.bot.database.add_user_to_server(contxt=contxt)
-        if isinstance(outcome1, DatabaseError):
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        outcome = self.bot.database.add_user_to_server(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
         await contxt.reply_to_user("Successfully registered in this server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -69,22 +72,87 @@ class Commands(commands.Cog):
         Disassociate yourself from the current server
         """
         contxt = DiscordCtx(ctx)
-        outcome1 = self.bot.database.remove_user_from_server(contxt=contxt)
-        if isinstance(outcome1, DatabaseError):
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        outcome = self.bot.database.remove_user_from_server(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
         await contxt.reply_to_user("Successfully deregistered from this server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def timezone(self, ctx):
         contxt = DiscordCtx(ctx)
-        timezone = self.bot.database.get_timezone(contxt=contxt)
-        await contxt.reply_to_user(f"Your current timezone is {timezone}.")
+        outcome = self.bot.database.get_timezone(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        await contxt.reply_to_user(f"Your current timezone is {outcome}.")
 
     @commands.command()
-    async def settimezone(self, timezone, ctx):
+    async def settimezone(self, ctx, timezone=None):
         contxt = DiscordCtx(ctx)
-        new_timezone = self.bot.database.set_timezone(contxt=contxt)
-        await contxt.reply_to_user(f"Timezone set to {new_timezone}.", exec_outcome=ExecutionOutcome.SUCCESS)
+        if isinstance(timezone, str) and timezone.lower() == "options":
+            await contxt.reply_to_user(
+                f"Timezone codes: {DBTimezone.timezone_code_url}",
+                exec_outcome=ExecutionOutcome.DEFAULT
+            )
+
+
+
+        new_tz = DBTimezone(timezone)
+        if not timezone:
+            await contxt.reply_to_user(
+                f"""Please provide a valid timezone code (eg `{BOT_PREFIX}settimezone EST`).
+                If you don't know your timezone code, run the command `{BOT_PREFIX}settimezone options`\
+                to see a full list.""",
+                exec_outcome=ExecutionOutcome.WARNING
+            )
+
+        if isinstance(timezone, str) and timezone.lower() == "options":
+            await contxt.reply_to_user(
+                "",
+                exec_outcome=ExecutionOutcome.DEFAULT
+            )
+
+
+        new_tz = DBTimezone(timezone)
+        if not new_tz.valid:
+            await contxt.reply_to_user(
+                f"""Please provide a valid timezone code (eg `{BOT_PREFIX}settimezone EST`).
+                If you don't know your timezone code, run the command `{BOT_PREFIX}settimezone options`\
+                to see a full list.""",
+                exec_outcome=ExecutionOutcome.WARNING
+        )
+
+
+        if timezone:
+            new_tz = DBTimezone(timezone)
+            if not new_tz.valid:
+                await contxt.reply_to_user(
+                    new_tz.invalid_code_msg,
+                    exec_outcome=ExecutionOutcome.WARNING
+                )
+            else:
+                await contxt.reply_to_user(f"Timezone successfully set to {new_tz.code}.")
+            return
+
+        await contxt.reply_to_user(
+            """Please reply with your timezone if you know its code (eg EST), or reply with `options`\
+            if you wish for me to provide some common timezone codes."""
+        )
+
+        try:
+            user_reply = await self.bot.wait_for(
+                'message',
+                check=lambda msg:msg.author.id == contxt.user_id,
+                timeout=60
+            )
+        except TimeoutError:
+            return
+        
+        new_tz = DBTimezone(timezone)
+
+        # new_timezone = self.bot.database.set_timezone(contxt=contxt)
+        # await contxt.reply_to_user(f"Timezone set to {new_timezone}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def updatename(self, ctx):
