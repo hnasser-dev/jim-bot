@@ -1,6 +1,6 @@
 from discord.ext import commands
 from src.utils.helpers import DiscordCtx, ExecutionOutcome, DBTimezone
-from src.utils.error_handling import DatabaseError, LogicError
+from src.utils.error_handling import ExecutionError, DatabaseError, LogicError
 from asyncio import TimeoutError
 from src.utils.globals import BOT_PREFIX
 
@@ -113,11 +113,11 @@ class Commands(commands.Cog):
         Updates a user's name to their current discord user_name
         """
         contxt = DiscordCtx(ctx)
-        old_name, new_name = self.bot.database.update_name(contxt=contxt)
-        if old_name == new_name:
-            await contxt.reply_to_user(f"Display name already set to {new_name}.", exec_outcome=ExecutionOutcome.WARNING)
-        else:
-            await contxt.reply_to_user(f"Display name updated to {new_name}.", exec_outcome=ExecutionOutcome.SUCCESS)
+        outcome = self.bot.database.update_name(contxt=contxt)
+        if isinstance(outcome, ExecutionError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        await contxt.reply_to_user(f"Display name updated to {outcome}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def sesh(self, ctx, offset=None):
@@ -146,6 +146,7 @@ class Commands(commands.Cog):
         """
         await self.sesh(ctx, offset=-1)
 
+    # TODO - the below commands
     @commands.command()
     async def graph(self, ctx, other=None):
         contxt = DiscordCtx(ctx)

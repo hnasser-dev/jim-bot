@@ -153,10 +153,11 @@ class DatabaseCommands(DatabaseManager):
         if old_username == contxt.user_name:
             return LogicError(contxt, ExecutionOutcome.ERROR, f"Your current username ({contxt.user_name}) is the same as your currently-registered username ({old_username}).")
         try:
-            self.execute_query(UPDATE_NAME_IN_USERS, {"id": contxt.user_id})
+            new_name = self.execute_query(UPDATE_NAME_IN_USERS, {"id": contxt.user_id})[0]
             self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        return new_name
 
     def add_sesh_for_user(self, contxt: DiscordCtx, offset=0):
         try:
