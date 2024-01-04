@@ -2,13 +2,13 @@ from discord import Intents
 from discord.ext import commands
 from pathlib import Path
 import os
-from utils.globals import (
+from src.utils.globals import (
     BOT_TOKEN,
     BOT_TEST_TOKEN,
     DEBUG,
     DB_PATH
 )
-from database.database_commands import DatabaseCommands
+from src.database.database_commands import DatabaseCommands
 
 
 class MyBot(commands.Bot):

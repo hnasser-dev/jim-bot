@@ -2,25 +2,7 @@ from discord.ext import commands
 from datetime import datetime
 import pytz
 from enum import Enum
-from utils.globals import LOG_FILE_PATH
-
-
-""" Logging Configuration """
-from logs.log_handler import MyLogger
-from pathlib import Path
-file_stem = Path(__file__).stem # get name of the current file (without .py)
-src_dir = Path(__file__).parent
-MY_LOGGER = MyLogger(
-    file_name=file_stem,
-    log_file_path=LOG_FILE_PATH
-)
-
-
-class ExecutionOutcome(Enum):
-    ERROR = 2
-    WARNING = 1
-    DEFAULT = 0
-    SUCCESS = -1
+from src.utils.error_handling import ExecutionOutcome
 
 
 class DayOffset(Enum):

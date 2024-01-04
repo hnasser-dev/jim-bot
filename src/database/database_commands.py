@@ -1,5 +1,9 @@
-from database import DatabaseManager, DatabaseError, ParseError
-from utils.queries import (
+from src.database import DatabaseManager
+from src.utils.error_handling import DatabaseError, ParseError
+from src.utils.helpers import DiscordCtx, ExecutionOutcome, DayOffset
+from src.utils.globals import BOT_PREFIX
+import sqlite3
+from src.utils.queries import (
     SELECT_USER_IN_USERS,
     INSERT_USER_INTO_USERS,
     SELECT_SERVER_IN_SERVERS,
@@ -14,9 +18,6 @@ from utils.queries import (
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
 )
-from utils.helpers import DiscordCtx, ExecutionOutcome, DayOffset
-from utils.globals import BOT_PREFIX
-import sqlite3
 
 
 class DatabaseCommands(DatabaseManager):

@@ -1,6 +1,6 @@
 from discord.ext import commands
-from utils.helpers import DiscordCtx, ExecutionOutcome, extract_id
-from database import DatabaseError, ParseError
+from src.utils.helpers import DiscordCtx, ExecutionOutcome, extract_id
+from src.utils.error_handling import DatabaseError, ParseError
 
 
 class Commands(commands.Cog):
