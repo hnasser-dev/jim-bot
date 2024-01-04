@@ -101,20 +101,22 @@ class Commands(commands.Cog):
     @commands.command()
     async def sesh(self, ctx, offset=None):
         contxt = DiscordCtx(ctx)
-        if isinstance(offset, int):
-            if offset > 7 or offset < 0:
-                err = ParseError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
-                await contxt.reply_to_user(err.text, exec_outcome=err.level)
-                return
-            outcome1 = self.bot.database.add_sesh_for_user(contxt=contxt)
-            
-
-
-
+        if isinstance(offset, str) and offset.lower() == "yesterday":
+            offset = -1
+        if not isinstance(offset, int):
+            await contxt.reply_to_user(
+                "Invalid date offset provided. Please supply a valid date offset between -7 and 0 inclusive",
+                exec_outcome=ExecutionOutcome.WARNING
+            )
+            return
         outcome1 = self.bot.database.add_sesh_for_user(contxt=contxt)
-        if isinstance(outcome1, DatabaseError):
+        if isinstance(outcome1, ParseError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
-        await contxt.reply_to_user(f"Session added! You have now been to the gym {outcome1} times.", exec_outcome=ExecutionOutcome.SUCCESS)
+            return
+        await contxt.reply_to_user(
+            f"Session added! You have now been to the gym {outcome1} times.",
+            exec_outcome=ExecutionOutcome.SUCCESS
+        )
 
     @commands.command()
     async def seshterday(self, ctx):
