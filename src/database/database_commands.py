@@ -158,11 +158,11 @@ class DatabaseCommands(DatabaseManager):
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return contxt.user_name
 
-    def add_sesh_for_user(self, contxt: DiscordCtx, offset=0):
+    def add_sesh_for_user(self, contxt: DiscordCtx, offset):
         try:
             day_offset = DayOffset(offset)
         except ValueError as e: # if not a valid value
-            return OtherError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
+            return OtherError(contxt, ExecutionOutcome.WARNING, "Please supply a valid day offset between -7 and 0 inclusive. Or specify `yesterday`.")
         timestamp = contxt.get_timestamp_str(day_offset=day_offset.value)
         user_params = {
             "user_id": contxt.user_id,
@@ -182,7 +182,7 @@ class DatabaseCommands(DatabaseManager):
         }
         if not self.user_in_db(contxt.user_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
-        num_visits = self.execute_query(SELECT_COUNT_USER_VISITS, user_params)[0]
+        num_visits = self.execute_query(SELECT_COUNT_USER_VISITS, user_params)[0][0]
         return num_visits
 
     def graphify(self, contxt: DiscordCtx):

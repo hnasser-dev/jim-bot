@@ -153,18 +153,23 @@ class Commands(commands.Cog):
         await contxt.reply_to_user(f"Display name updated to {outcome}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
-    async def sesh(self, ctx, offset=None):
+    async def sesh(self, ctx, offset="0"):
         contxt = DiscordCtx(ctx)
         if isinstance(offset, str) and offset.lower() == "yesterday":
             offset = -1
-        if not isinstance(offset, int):
-            await contxt.reply_to_user(
-                "Invalid date offset provided. Please supply a valid date offset between -7 and 0 inclusive",
-                exec_outcome=ExecutionOutcome.WARNING
-            )
-            return
-        outcome = self.bot.database.add_sesh_for_user(contxt=contxt)
-        if isinstance(outcome, OtherError):
+        else:
+            try:
+                offset = int(offset)
+            except ValueError:
+                outcome = OtherError(
+                    contxt,
+                    ExecutionOutcome.WARNING,
+                    "Invalid date offset provided. Please supply a valid day offset between -7 and 0 inclusive"
+                )
+                await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+                return
+        outcome = self.bot.database.add_sesh_for_user(contxt=contxt, offset=offset)
+        if isinstance(outcome, ExecutionError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
         self.bot.database.conn.commit()
