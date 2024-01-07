@@ -21,6 +21,7 @@ from src.utils.queries import (
     SELECT_USER_NAME_IN_USERS,
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
+    SELECT_USER_DATA_IN_CURR_SERVER,
 )
 
 
@@ -40,7 +41,7 @@ class DatabaseCommands(DatabaseManager):
         user_params = {
             "id": contxt.user_id,
             "name": contxt.user_name,
-            "join_time": contxt.timestamp
+            "added_time": contxt.timestamp
         }
         try:
             self.execute_query(INSERT_USER_INTO_USERS, user_params)
@@ -52,18 +53,21 @@ class DatabaseCommands(DatabaseManager):
 
     def remove_user_from_users(self, contxt: DiscordCtx):
         if not self.user_in_db(contxt.user_id):
+            print("User not in db")
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             self.execute_query(REMOVE_USER_FROM_USERS, {"id": contxt.user_id})
             self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        print("User removed")
+
 
     def register_server(self, contxt: DiscordCtx):
         server_params = {
             "id": contxt.server_id,
             "name": contxt.server_name,
-            "join_time": contxt.timestamp
+            "added_time": contxt.timestamp
         }
         try:
             self.execute_query(INSERT_SERVER_INTO_SERVERS, server_params)
@@ -191,4 +195,8 @@ class DatabaseCommands(DatabaseManager):
         ...
 
     def get_data_for_server(self, contxt: DiscordCtx):
-        ...
+        params = {
+            "server_id": contxt.server_id
+        }
+        data = self.execute_query(SELECT_USER_DATA_IN_CURR_SERVER, params)
+        print(data)

@@ -16,13 +16,23 @@ class Commands(commands.Cog):
         Automatically joins the current server (joinserver), too
         """
         contxt = DiscordCtx(ctx)
-        outcome1 = self.bot.database.add_user_to_users(contxt=contxt)
-        if isinstance(outcome1, DatabaseError):
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        server_in_db = self.bot.database.server_in_db(server_id=contxt.server_id)
+        if not server_in_db:
+            outcome = DatabaseError(
+                contxt,
+                ExecutionOutcome.WARNING,
+                ("This server is not registered in the database.\n"
+                f"Please use `{BOT_PREFIX}registerserver` before registering yourself.")
+            )
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        outcome2 = self.bot.database.add_user_to_server(contxt=contxt)
-        if isinstance(outcome2, DatabaseError):
-            await contxt.reply_to_user(outcome2.text, exec_outcome=outcome2.level)
+        outcome = self.bot.database.add_user_to_users(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        outcome = self.bot.database.add_user_to_server(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
         await contxt.reply_to_user("Successfully registered.", exec_outcome=ExecutionOutcome.SUCCESS)
 
@@ -32,13 +42,13 @@ class Commands(commands.Cog):
         Deregister from the bot
         """
         contxt = DiscordCtx(ctx)
-        outcome1 = self.bot.database.remove_user_from_users(contxt=contxt)
-        if isinstance(outcome1, DatabaseError):
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        outcome = self.bot.database.remove_user_from_all_servers(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        outcome2 = self.bot.database.remove_user_from_all_servers(contxt=contxt)
-        if isinstance(outcome2, DatabaseError):
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        outcome = self.bot.database.remove_user_from_users(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
         await contxt.reply_to_user("Successfully deregistered.", exec_outcome=ExecutionOutcome.SUCCESS)
 
@@ -146,12 +156,12 @@ class Commands(commands.Cog):
                 exec_outcome=ExecutionOutcome.WARNING
             )
             return
-        outcome1 = self.bot.database.add_sesh_for_user(contxt=contxt)
-        if isinstance(outcome1, OtherError):
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+        outcome = self.bot.database.add_sesh_for_user(contxt=contxt)
+        if isinstance(outcome, OtherError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
         await contxt.reply_to_user(
-            f"Session added! You have now been to the gym {outcome1} times.",
+            f"Session added! You have now been to the gym {outcome} times.",
             exec_outcome=ExecutionOutcome.SUCCESS
         )
 
@@ -164,17 +174,19 @@ class Commands(commands.Cog):
 
     # TODO - the below commands
     @commands.command()
+    async def table(self, ctx):
+        contxt = DiscordCtx(ctx)
+        table_data = self.bot.database.get_data_for_server(contxt=contxt)
+        await contxt.reply_to_user("<table>")
+
+
+
+    @commands.command()
     async def graph(self, ctx, other=None):
         contxt = DiscordCtx(ctx)
         user_to_lookup = extract_id(other) if other else contxt.user_id
         visits = self.bot.database.get_user_visits(user_id=user_to_lookup)
         graph = self.bot.database.graphify(data=visits)
-        await contxt.reply_to_user("placeholder")
-
-    @commands.command()
-    async def table(self, ctx):
-        contxt = DiscordCtx(ctx)
-        table_data = self.bot.database.get_data_for_server(contxt=contxt)
         await contxt.reply_to_user("placeholder")
 
     @commands.command()
