@@ -118,9 +118,6 @@ class DatabaseCommands(DatabaseManager):
             user_results = self.execute_query(SELECT_USER_SERVERS, params)
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
-        else:
-            if len(user_results) < 1:
-                return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) is not registered in any servers.")
         try:
             self.execute_query(REMOVE_USER_FROM_ALL_SERVERS, params)
         except sqlite3.Error as f:
