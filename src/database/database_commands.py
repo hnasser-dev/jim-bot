@@ -60,7 +60,6 @@ class DatabaseCommands(DatabaseManager):
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         print("User removed")
 
-
     def register_server(self, contxt: DiscordCtx):
         server_params = {
             "id": contxt.server_id,
@@ -94,7 +93,11 @@ class DatabaseCommands(DatabaseManager):
         params = {
             "user_id": contxt.user_id,
             "server_id": contxt.server_id,
-        }            
+        }     
+        if not self.server_in_db(contxt.server_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING,
+                f"This is not a registered server. Use `{BOT_PREFIX}registerserver` to register this server first."
+        )       
         try:
             user_results = self.execute_query(SELECT_USER_IN_SERVER, params)
         except sqlite3.Error as e:
