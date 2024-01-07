@@ -45,7 +45,6 @@ class DatabaseCommands(DatabaseManager):
         }
         try:
             self.execute_query(INSERT_USER_INTO_USERS, user_params)
-            self.conn.commit()
         except sqlite3.IntegrityError as e:
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) already in the database.", e)
         except sqlite3.Error as f:
@@ -57,7 +56,6 @@ class DatabaseCommands(DatabaseManager):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             self.execute_query(REMOVE_USER_FROM_USERS, {"id": contxt.user_id})
-            self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         print("User removed")
@@ -71,7 +69,6 @@ class DatabaseCommands(DatabaseManager):
         }
         try:
             self.execute_query(INSERT_SERVER_INTO_SERVERS, server_params)
-            self.conn.commit()
         except sqlite3.IntegrityError as e:
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"This server is already registered.", e)
         except sqlite3.Error as f:
@@ -88,7 +85,6 @@ class DatabaseCommands(DatabaseManager):
             )
         try:
             self.execute_query(ADD_USER_TO_SERVER, params)
-            self.conn.commit()
         except sqlite3.IntegrityError as e:
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) already registered in this server.", e)
         except sqlite3.Error as f:
@@ -108,7 +104,6 @@ class DatabaseCommands(DatabaseManager):
                 return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) is not registered in this server.")
         try:
             self.execute_query(REMOVE_USER_FROM_SERVER, params)
-            self.conn.commit()
         except sqlite3.Error as f:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=f)
 
@@ -125,7 +120,6 @@ class DatabaseCommands(DatabaseManager):
                 return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) is not registered in any servers.")
         try:
             self.execute_query(REMOVE_USER_FROM_ALL_SERVERS, params)
-            self.conn.commit()
         except sqlite3.Error as f:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=f)
 
@@ -140,7 +134,6 @@ class DatabaseCommands(DatabaseManager):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             self.execute_query(UPDATE_TIMEZONE_IN_USERS, {"id": contxt.user_id, "timezone": timezone_id})
-            self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return timezone_id
@@ -158,7 +151,6 @@ class DatabaseCommands(DatabaseManager):
             return OtherError(contxt, ExecutionOutcome.ERROR, f"Your current username ({contxt.user_name}) is the same as your currently-registered username ({old_username}).")
         try:
             new_name = self.execute_query(UPDATE_NAME_IN_USERS, {"id": contxt.user_id})[0]
-            self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return new_name
@@ -177,7 +169,6 @@ class DatabaseCommands(DatabaseManager):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             self.execute_query(INSERT_VISIT_INTO_VISITS, user_params)
-            self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return self.get_user_visits(contxt=contxt) # return the updated number of visits

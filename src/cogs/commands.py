@@ -34,6 +34,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user("Successfully registered.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -50,6 +51,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user("Successfully deregistered.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -62,6 +64,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user(f"Successfully registered {contxt.server_name} as a server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -74,6 +77,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user("Successfully registered in this server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -86,6 +90,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user("Successfully deregistered from this server.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -95,6 +100,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user(f"Your current timezone is `{outcome}`.")
 
     @commands.command()
@@ -131,6 +137,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user(f"Timezone successfully set to {outcome}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -143,6 +150,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, ExecutionError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user(f"Display name updated to {outcome}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
@@ -160,6 +168,7 @@ class Commands(commands.Cog):
         if isinstance(outcome, OtherError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        self.bot.database.conn.commit()
         await contxt.reply_to_user(
             f"Session added! You have now been to the gym {outcome} times.",
             exec_outcome=ExecutionOutcome.SUCCESS
@@ -177,6 +186,7 @@ class Commands(commands.Cog):
     async def table(self, ctx):
         contxt = DiscordCtx(ctx)
         table_data = self.bot.database.get_data_for_server(contxt=contxt)
+        self.bot.database.conn.commit()
         await contxt.reply_to_user("<table>")
 
 
