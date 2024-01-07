@@ -9,8 +9,8 @@ SELECT * FROM users WHERE id = :id
 
 # register (add user into db)
 INSERT_USER_INTO_USERS = """\
-INSERT INTO users (id, name, join_time)
-VALUES (:id, :name, :join_time)
+INSERT INTO users (id, name, added_time)
+VALUES (:id, :name, :added_time)
 """
 
 # remove user from db
@@ -32,8 +32,8 @@ VALUES (:id, :name, :added_time)
 
 # register user with server
 ADD_USER_TO_SERVER = """\
-INSERT INTO user_servers (user_id, server_id, registered_time)
-VALUES (:user_id, :server_id, :registered_time)
+INSERT INTO user_servers (user_id, server_id)
+VALUES (:user_id, :server_id)
 """
 
 # deregister user from server
@@ -98,8 +98,8 @@ SELECT_COUNT_USER_VISITS = """\
 SELECT
 COUNT(*) AS num_visits
 FROM users
-INNER JOIN gym_visits
-ON users.id = gym_visits.user_id
+INNER JOIN visits
+ON users.id = visits.user_id
 WHERE user_id = :user_id
 """
 
@@ -107,4 +107,21 @@ WHERE user_id = :user_id
 SELECT_USER_NAME_IN_USERS = """\
 SELECT name FROM users
 WHERE id = :id
+"""
+
+# display user data for all users in the server
+# left outer join is to include users who haven't been to the gym yet.
+SELECT_USER_DATA_IN_CURR_SERVER = """\
+SELECT
+users.name AS name,
+users.id AS discord_id,
+COUNT(visits.timestamp) AS timestamp
+FROM users
+INNER JOIN user_servers
+ON users.id = user_servers.user_id
+LEFT OUTER JOIN visits
+ON user_servers.user_id = visits.user_id
+WHERE user_servers.server_id = :server_id
+GROUP BY user_servers.user_id
+ORDER BY name
 """
