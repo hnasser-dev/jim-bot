@@ -52,7 +52,6 @@ class DatabaseCommands(DatabaseManager):
 
     def remove_user_from_users(self, contxt: DiscordCtx):
         if not self.user_in_db(contxt.user_id):
-            print("User not in db")
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             self.execute_query(REMOVE_USER_FROM_USERS, {"id": contxt.user_id})
@@ -139,21 +138,25 @@ class DatabaseCommands(DatabaseManager):
         return timezone_id
 
     def update_name(self, contxt: DiscordCtx):
+        # if not self.user_in_db(contxt.user_id):
+        #     return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             user_results = self.execute_query(SELECT_USER_NAME_IN_USERS, {"id": contxt.user_id})
+            print(user_results)
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         else:
             if len(user_results) < 1:
                 return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) is not registered in this server.")
-        old_username = user_results[0]
+        old_username = user_results[0][0]
+        print(old_username, contxt.user_name)
         if old_username == contxt.user_name:
             return OtherError(contxt, ExecutionOutcome.ERROR, f"Your current username ({contxt.user_name}) is the same as your currently-registered username ({old_username}).")
         try:
-            new_name = self.execute_query(UPDATE_NAME_IN_USERS, {"id": contxt.user_id})[0]
+            self.execute_query(UPDATE_NAME_IN_USERS, {"id": contxt.user_id, "name": contxt.user_name})
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
-        return new_name
+        return contxt.user_name
 
     def add_sesh_for_user(self, contxt: DiscordCtx, offset=0):
         try:
