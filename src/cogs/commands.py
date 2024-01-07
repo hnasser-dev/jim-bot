@@ -109,9 +109,8 @@ class Commands(commands.Cog):
         if not tz_identifier:
             outcome = OtherError(
                 contxt,
-                ExecutionOutcome.WARNING,
-                (f"Usage: `{BOT_PREFIX}settimezone <timezone_identifier>`"
-                "If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone <timezone_identifier>`.")
+                text=(f"Usage: `{BOT_PREFIX}settimezone <timezone_identifier>`\n"
+                f"If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone options`.")
             )
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
@@ -119,7 +118,7 @@ class Commands(commands.Cog):
             outcome = OtherError(
                 contxt,
                 text = ("List of timezone identifiers (use the `TZ identifier` column - eg `America/New_York`):\n"
-                "f**{TZ_LIST_URL}**")
+                f"**{TZ_LIST_URL}**")
             )
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
@@ -128,8 +127,8 @@ class Commands(commands.Cog):
             outcome = OtherError(
                 contxt,
                 level = ExecutionOutcome.WARNING,
-                text = (f"{tz_identifier} is not a valid timezone identifier."
-                        "If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone <timezone_identifier>`.")
+                text = (f"{tz_identifier} is not a valid timezone identifier.\n"
+                        f"If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone <timezone_identifier>`.")
             )
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return

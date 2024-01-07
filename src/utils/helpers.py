@@ -18,13 +18,12 @@ class DayOffset(Enum):
 
 class DBTimezone:
     def __init__(self, identifier):
-        self.identifier = identifier.title()
+        self.identifier = "UTC" if identifier.lower() == "utc" else identifier.title()
         self.pytz_tz = self.get_pytz_tz()
 
     def get_pytz_tz(self):
         if self.identifier in pytz.all_timezones_set:
             return pytz.timezone(self.identifier)
-        return None
 
     def get_local_time_now(self):
         self.local_tz = pytz.timezone(self.identifier)
