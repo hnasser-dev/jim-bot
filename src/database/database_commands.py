@@ -129,7 +129,7 @@ class DatabaseCommands(DatabaseManager):
     def get_timezone(self, contxt: DiscordCtx):
         if not self.user_in_db(contxt.user_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
-        timezone = self.execute_query(SELECT_USER_TIMEZONE, {"id": contxt.user_id})
+        timezone = self.execute_query(SELECT_USER_TIMEZONE, {"id": contxt.user_id})[0][0]
         return timezone
 
     def set_timezone(self, contxt: DiscordCtx, timezone_id: str):
