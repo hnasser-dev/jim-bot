@@ -65,7 +65,7 @@ class DiscordCtx:
         match exec_outcome.name:
             case "ERROR" | "WARNING":
                 emoji_str = ":x: "
-            case "DEFAULT":
+            case "SUCCESS":
                 emoji_str = ":white_check_mark: "
             case _:
                 emoji_str = ""
