@@ -24,3 +24,6 @@ DB_PATH = os.path.join(SRC_DIR_PATH, "database/bot.db")
 
 """ Bot """
 BOT_PREFIX = "jim/"
+
+""" Other """
+TZ_LIST_URL = "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"

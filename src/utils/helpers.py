@@ -17,16 +17,17 @@ class DayOffset(Enum):
 
 
 class DBTimezone:
-    timezone_code_url = 
-    def __init__(self, code):
-        self.code = code.upper()
-        self.valid = self.check_valid_code()
-        self.tz = pytz.timezone(self.code) if self.valid else None
+    def __init__(self, identifier):
+        self.identifier = identifier.title()
+        self.pytz_tz = self.get_pytz_tz()
 
-    def check_valid_code(self):
-        if self.code in pytz.all_timezones_set:
-            return True
-        return False
+    def get_pytz_tz(self):
+        if self.identifier in pytz.all_timezones_set:
+            return pytz.timezone(self.identifier)
+        return None
+
+    def get_local_time_now(self):
+        self.local_tz = pytz.timezone(self.identifier)
 
 
 class DiscordCtx:

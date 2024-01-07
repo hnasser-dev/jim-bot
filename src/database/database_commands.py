@@ -1,5 +1,5 @@
 from src.database import DatabaseManager
-from src.utils.error_handling import DatabaseError, LogicError
+from src.utils.error_handling import DatabaseError, OtherError
 from src.utils.helpers import DiscordCtx, ExecutionOutcome, DayOffset
 from src.utils.globals import BOT_PREFIX
 import sqlite3
@@ -131,15 +131,15 @@ class DatabaseCommands(DatabaseManager):
         timezone = self.execute_query(SELECT_USER_TIMEZONE, {"id": contxt.user_id})
         return timezone
 
-    def set_timezone(self, contxt: DiscordCtx, timezone: float):
+    def set_timezone(self, contxt: DiscordCtx, timezone_id: str):
         if not self.user_in_db(contxt.user_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
-            self.execute_query(UPDATE_TIMEZONE_IN_USERS, {"id": contxt.user_id, "timezone": timezone})
+            self.execute_query(UPDATE_TIMEZONE_IN_USERS, {"id": contxt.user_id, "timezone": timezone_id})
             self.conn.commit()
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
-        return timezone
+        return timezone_id
 
     def update_name(self, contxt: DiscordCtx):
         try:
@@ -151,7 +151,7 @@ class DatabaseCommands(DatabaseManager):
                 return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) is not registered in this server.")
         old_username = user_results[0]
         if old_username == contxt.user_name:
-            return LogicError(contxt, ExecutionOutcome.ERROR, f"Your current username ({contxt.user_name}) is the same as your currently-registered username ({old_username}).")
+            return OtherError(contxt, ExecutionOutcome.ERROR, f"Your current username ({contxt.user_name}) is the same as your currently-registered username ({old_username}).")
         try:
             new_name = self.execute_query(UPDATE_NAME_IN_USERS, {"id": contxt.user_id})[0]
             self.conn.commit()
@@ -163,7 +163,7 @@ class DatabaseCommands(DatabaseManager):
         try:
             day_offset = DayOffset(offset)
         except ValueError as e: # if not a valid value
-            return LogicError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
+            return OtherError(contxt, ExecutionOutcome.WARNING, f"Must supply a valid date offset (between -7 and 0 inclusive).")
         timestamp = contxt.get_timestamp_str(day_offset=day_offset.value)
         user_params = {
             "user_id": contxt.user_id,

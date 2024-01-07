@@ -36,5 +36,5 @@ class DatabaseError(ExecutionError):
     pass
 
 
-class LogicError(ExecutionError):
+class OtherError(ExecutionError):
     pass

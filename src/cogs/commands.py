@@ -1,8 +1,8 @@
 from discord.ext import commands
 from src.utils.helpers import DiscordCtx, ExecutionOutcome, DBTimezone
-from src.utils.error_handling import ExecutionError, DatabaseError, LogicError
+from src.utils.error_handling import ExecutionError, DatabaseError, OtherError
 from asyncio import TimeoutError
-from src.utils.globals import BOT_PREFIX
+from src.utils.globals import TZ_LIST_URL, BOT_PREFIX
 
 
 class Commands(commands.Cog):
@@ -88,24 +88,40 @@ class Commands(commands.Cog):
         await contxt.reply_to_user(f"Your current timezone is `{outcome}`.")
 
     @commands.command()
-    async def settimezone(self, ctx, time_offset="0"):
+    async def settimezone(self, ctx, tz_identifier=None):
         contxt = DiscordCtx(ctx)
-        try:
-            timezone = round(float(time_offset), 3)
-        except ValueError as e:
-            outcome1 = LogicError(
+        if not tz_identifier:
+            outcome = OtherError(
                 contxt,
                 ExecutionOutcome.WARNING,
-                "Please provide a valid timezone (relative to UTC), as a number (eg `-5`).",
-                exception=e
+                (f"Usage: `{BOT_PREFIX}settimezone <timezone_identifier>`"
+                "If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone <timezone_identifier>`.")
             )
-            await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        outcome2 = self.bot.database.set_timezone(contxt, timezone)
-        if isinstance(outcome2, DatabaseError):
-            await contxt.reply_to_user(outcome2.text, exec_outcome=outcome2.level)
+        if tz_identifier.lower() == "options":
+            outcome = OtherError(
+                contxt,
+                text = ("List of timezone identifiers (use the `TZ identifier` column - eg `America/New_York`):\n"
+                "f**{TZ_LIST_URL}**")
+            )
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        await contxt.reply_to_user(f"Timezone successfully set to `{outcome2}`.", exec_outcome=ExecutionOutcome.SUCCESS)
+        tz = DBTimezone(tz_identifier)
+        if tz.pytz_tz is None:
+            outcome = OtherError(
+                contxt,
+                level = ExecutionOutcome.WARNING,
+                text = (f"{tz_identifier} is not a valid timezone identifier."
+                        "If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone <timezone_identifier>`.")
+            )
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        outcome = self.bot.database.set_timezone(contxt=contxt, timezone_id=tz.identifier)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        await contxt.reply_to_user(f"Timezone successfully set to {outcome}.", exec_outcome=ExecutionOutcome.SUCCESS)
 
     @commands.command()
     async def updatename(self, ctx):
@@ -131,7 +147,7 @@ class Commands(commands.Cog):
             )
             return
         outcome1 = self.bot.database.add_sesh_for_user(contxt=contxt)
-        if isinstance(outcome1, LogicError):
+        if isinstance(outcome1, OtherError):
             await contxt.reply_to_user(outcome1.text, exec_outcome=outcome1.level)
             return
         await contxt.reply_to_user(
