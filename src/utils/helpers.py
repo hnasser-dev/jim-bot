@@ -29,6 +29,11 @@ class DBTimezone:
         self.local_tz = pytz.timezone(self.identifier)
 
     @staticmethod
+    def get_local_time(time_unix, pytz_tz):
+        dt_utc = datetime.fromtimestamp(time_unix)
+        return pytz.utc.localize(dt_utc).astimezone(pytz_tz).replace(tzinfo=None)
+
+    @staticmethod
     def days_ago_str(curr_unix: float, past_unix: float):
         days_ago = int((curr_unix - past_unix) / 86400)
         match days_ago:

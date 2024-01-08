@@ -93,6 +93,17 @@ INSERT INTO visits (user_id, timestamp)
 VALUES (:user_id, :timestamp)
 """
 
+# get a set of all visits for a user
+SELECT_ALL_USER_VISITS = """\
+SELECT
+visits.timestamp as timestamp
+FROM visits
+INNER JOIN users
+ON visits.user_id = users.id
+WHERE users.id = :user_id
+ORDER BY timestamp;
+"""
+
 # get the number of visits/seshes a user has made
 SELECT_COUNT_USER_VISITS = """\
 SELECT
@@ -109,16 +120,19 @@ SELECT name FROM users
 WHERE id = :id
 """
 
-# retrieve the date of the last visit for a given user
+# retrieve the dates of the last n visits for a given user
+# in ascending order
 SELECT_LAST_N_VISITS_DATES = """\
-SELECT
-timestamp AS visit_date
-FROM users
-INNER JOIN visits
-ON users.id = visits.user_id
-WHERE users.id = :user_id
-ORDER BY timestamp DESC
-LIMIT :n
+SELECT date
+FROM (
+    SELECT timestamp as date
+    FROM USERS
+    INNER JOIN visits ON users.id = visits.user_id
+    WHERE users.id = :user_id
+    ORDER BY timestamp DESC
+    LIMIT :n
+) AS recent
+ORDER BY date
 """
 
 # display user data for all users in the server

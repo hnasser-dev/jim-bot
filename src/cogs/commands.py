@@ -198,16 +198,16 @@ class Commands(commands.Cog):
             err = DatabaseError(contxt, ExecutionOutcome.WARNING, err_msg)
             await contxt.reply_to_user(err.text, err.level)
             return
-        visits = self.bot.database.get_user_visits(contxt, lookup_id)
+        num_visits = self.bot.database.get_num_user_visits(contxt, lookup_id)
         match self_lookup:
             case True:
-                if visits == 0: msg = "You have not been to the gym yet."
-                elif visits == 1: msg = "You have been to the gym once."
-                else: msg = f"You have been to the gym {visits} times."
+                if num_visits == 0: msg = "You have not been to the gym yet."
+                elif num_visits == 1: msg = "You have been to the gym once."
+                else: msg = f"You have been to the gym {num_visits} times."
             case False:
-                if visits == 0: msg = f"{lookup_name} has not been to the gym yet."
-                elif visits == 1: msg = f"{lookup_name} has been to the gym once."
-                else: msg = f"{lookup_name} has been to the gym {visits} times."
+                if num_visits == 0: msg = f"{lookup_name} has not been to the gym yet."
+                elif num_visits == 1: msg = f"{lookup_name} has been to the gym once."
+                else: msg = f"{lookup_name} has been to the gym {num_visits} times."
         await contxt.reply_to_user(msg)
 
     @commands.command()
@@ -225,13 +225,26 @@ class Commands(commands.Cog):
         if isinstance(outcome, ExecutionError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        dates, column_names = outcome
-        dates = [(datetime.fromtimestamp(date[0]).strftime("%d %b %Y"), DBTimezone.days_ago_str(contxt.timestamp, date[0])) for date in dates]
-        column_names += ["days_ago"] # [visit_date, days_ago]
+        timezone_id = self.bot.database.get_timezone(contxt, lookup_info=(lookup_name, lookup_id))
+        timezone = DBTimezone(timezone_id)
+        if not timezone.pytz_tz: # if for some reason the timezone in the db is not valid
+            err = OtherError(contxt, ExecutionOutcome.ERROR)
+            await contxt.reply_to_user(err.text, err.level)
+            return
+        unix_dates, column_names = outcome
+        # get localised dates in a readable format
+        dates = []
+        for unix_date, in unix_dates: # leave the , --> needed to unpack size 1 tuple
+            local_dt = DBTimezone.get_local_time(unix_date, timezone.pytz_tz)
+            local_date, local_time = local_dt.strftime("%d %b %Y"), local_dt.strftime("%H:%M:%S")
+            dates.append(
+                (local_date, local_time, DBTimezone.days_ago_str(contxt.timestamp, unix_date))
+            )
         refer_to_as = "You" if self_lookup else lookup_name
         if int(num_visits) == 1:
-            msg = f"{refer_to_as} last visited the gym on {dates[0][0]} ({dates[0][1]})."
+            msg = f"{refer_to_as} last visited the gym on {dates[0][0]}, at {dates[0][1]} ({dates[0][2]})."
         else:
+            column_names += ["time"] + ["days_ago"] # [date, time, days_ago]
             data_table = table2ascii(header=column_names, body=dates)
             msg = f"```Last {num_visits} gym visits for {lookup_name}:\n{data_table}```"
         await contxt.reply_to_user(msg)
@@ -260,15 +273,26 @@ class Commands(commands.Cog):
         """ Alias for jim/table """
         await self.table(ctx)
 
-
     # TODO - the below commands
     @commands.command()
     async def graph(self, ctx, other=None):
         contxt = DiscordCtx(ctx)
-        user_to_lookup = extract_id(other) if other else contxt.user_id
-        visits = self.bot.database.get_user_visits(user_id=user_to_lookup)
-        graph = self.bot.database.graphify(data=visits)
-        await contxt.reply_to_user("placeholder")
+        lookup_id = contxt.user_id if not other else DiscordCtx.extract_id(other)
+        self_lookup = True if lookup_id == contxt.user_id else False
+        lookup_name = self.bot.database.get_user_name_from_id(user_id=lookup_id)
+        if not lookup_name:
+            err_msg = "You are not registered in the database." if self_lookup else "The provided user is not registered in the database."
+            err = DatabaseError(contxt, ExecutionOutcome.WARNING, err_msg)
+            await contxt.reply_to_user(err.text, err.level)
+            return
+        outcome = self.bot.database.get_all_user_visits(contxt, lookup_id)
+        if isinstance(outcome, ExecutionError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        utc_dates, column_names = outcome
+
+
+
 
     @commands.command()
     async def helpme(self, ctx):

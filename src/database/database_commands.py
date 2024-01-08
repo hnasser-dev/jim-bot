@@ -21,6 +21,7 @@ from src.utils.queries import (
     SELECT_USER_NAME_IN_USERS,
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
+    SELECT_ALL_USER_VISITS,
     SELECT_USER_DATA_IN_CURR_SERVER,
     SELECT_LAST_N_VISITS_DATES,
 )
@@ -126,10 +127,13 @@ class DatabaseCommands(DatabaseManager):
         except sqlite3.Error as f:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=f)
 
-    def get_timezone(self, contxt: DiscordCtx):
+    def get_timezone(self, contxt: DiscordCtx, lookup_info=None):
+        lookup_name, lookup_id = contxt.user_name, contxt.user_id
+        if lookup_info: # if another user is being looked up
+            lookup_name, lookup_id = lookup_info
         if not self.user_in_db(contxt.user_id):
-            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
-        timezone = self.execute_query(SELECT_USER_TIMEZONE, {"id": contxt.user_id})[0][0]
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({lookup_name}) not in the database.")
+        timezone = self.execute_query(SELECT_USER_TIMEZONE, {"id": lookup_id})[0][0]
         return timezone
 
     def set_timezone(self, contxt: DiscordCtx, timezone_id: str):
@@ -176,9 +180,19 @@ class DatabaseCommands(DatabaseManager):
             self.execute_query(INSERT_VISIT_INTO_VISITS, user_params)
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
-        return self.get_user_visits(contxt, contxt.user_id) # return the updated number of visits
+        return self.get_num_user_visits(contxt, contxt.user_id) # return the updated number of visits
 
-    def get_user_visits(self, contxt: DiscordCtx, lookup_id) -> int|DatabaseError:
+    def get_all_user_visits(self, contxt: DiscordCtx, lookup_id):
+        if not self.user_in_db(lookup_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User not in the database.")
+        try:
+            visits_data = self.execute_query(SELECT_ALL_USER_VISITS, {"user_id": lookup_id}, return_columns=True)
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        print(visits_data)
+        return visits_data
+
+    def get_num_user_visits(self, contxt: DiscordCtx, lookup_id) -> int|DatabaseError:
         if not self.user_in_db(lookup_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User not in the database.")
         try:
