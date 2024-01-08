@@ -14,11 +14,11 @@ class ExecutionError:
         self.level = level
         self.text = text # readable text describing the issue
         self.exception = exception
-        self.command_message = contxt.ctx.message if contxt else ""
+        self.message_data = contxt.ctx.message if contxt else ""
         self.log_error() # when creating an object it should automatically log it
 
     def log_error(self):
-        log_msg = f"{self.command_message}/{self.text}/{self.exception if self.exception else ''}"
+        log_msg = f"{self.text}/{self.exception if self.exception else ''}/{self.message_data}"
         match self.level.name:
             case "ERROR":
                 PROJECT_LOGGER.error(log_msg)
