@@ -185,31 +185,31 @@ class Commands(commands.Cog):
         """
         await self.sesh(ctx, offset="-1")
 
-    # TODO - the below commands
-    @commands.command()
-    async def table(self, ctx):
-        contxt = DiscordCtx(ctx)
-        table_data = self.bot.database.get_data_for_server(contxt=contxt)
-        self.bot.database.conn.commit()
-        await contxt.reply_to_user("<table>")
-
-
-
-    @commands.command()
-    async def graph(self, ctx, other=None):
-        contxt = DiscordCtx(ctx)
-        user_to_lookup = extract_id(other) if other else contxt.user_id
-        visits = self.bot.database.get_user_visits(user_id=user_to_lookup)
-        graph = self.bot.database.graphify(data=visits)
-        await contxt.reply_to_user("placeholder")
-
     @commands.command()
     async def visits(self, ctx, other=None):
         contxt = DiscordCtx(ctx)
-        user_to_lookup = extract_id(other) if other else contxt.user_id
-        visits = self.bot.database.get_user_visits(contxt=contxt, user_id=user_to_lookup)
-        await contxt.reply_to_user("placeholder")
+        lookup_id = contxt.user_id if not other else DiscordCtx.extract_id(other)
+        self_lookup = True if lookup_id == contxt.user_id else False
+        lookup_name = self.bot.database.get_user_name_from_id(user_id=lookup_id)
+        if not lookup_name:
+            err_msg = "You are not registered in the database." if self_lookup else "The provided user is not registered in the database."
+            err = DatabaseError(contxt, ExecutionOutcome.WARNING, err_msg)
+            await contxt.reply_to_user(err.text, err.level)
+            return
+        visits = self.bot.database.get_user_visits(contxt, lookup_id, lookup_name)
+        match self_lookup:
+            case True:
+                if visits == 0: msg = "You have not been to the gym yet."
+                elif visits == 1: msg = "You have been to the gym once."
+                else: msg = f"You have been to the gym {visits} times."
+            case False:
+                if visits == 0: msg = f"{lookup_name} has not been to the gym yet."
+                elif visits == 1: msg = f"{lookup_name} has been to the gym once."
+                else: msg = f"{lookup_name} has been to the gym {visits} times."
+        await contxt.reply_to_user(msg)
 
+
+    # TODO - the below commands
     @commands.command()
     async def lastvisit(self, ctx, other=None):
         contxt = DiscordCtx(ctx)
@@ -225,6 +225,23 @@ class Commands(commands.Cog):
         contxt = DiscordCtx(ctx)
         user_to_lookup = extract_id(other) if other else contxt.user_id
         last_n_visits = self.bot.database.get_user_visits(contxt=contxt, user_id=user_to_lookup, last_n=num_visits)
+        await contxt.reply_to_user("placeholder")
+
+    @commands.command()
+    async def table(self, ctx):
+        contxt = DiscordCtx(ctx)
+        table_data = self.bot.database.get_data_for_server(contxt=contxt)
+        self.bot.database.conn.commit()
+        await contxt.reply_to_user("<table>")
+
+
+
+    @commands.command()
+    async def graph(self, ctx, other=None):
+        contxt = DiscordCtx(ctx)
+        user_to_lookup = extract_id(other) if other else contxt.user_id
+        visits = self.bot.database.get_user_visits(user_id=user_to_lookup)
+        graph = self.bot.database.graphify(data=visits)
         await contxt.reply_to_user("placeholder")
 
     @commands.command()

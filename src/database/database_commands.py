@@ -36,6 +36,10 @@ class DatabaseCommands(DatabaseManager):
     def server_in_db(self, server_id) -> bool:
         servers = self.execute_query(SELECT_SERVER_IN_SERVERS, {"id": server_id})
         return bool(servers)
+    
+    def get_user_name_from_id(self, user_id):
+        results = self.execute_query(SELECT_USER_NAME_IN_USERS, {"id": user_id})
+        return None if len(results) < 1 else results[0][0]
 
     def add_user_to_users(self, contxt: DiscordCtx):
         user_params = {
@@ -57,7 +61,6 @@ class DatabaseCommands(DatabaseManager):
             self.execute_query(REMOVE_USER_FROM_USERS, {"id": contxt.user_id})
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
-        print("User removed")
 
     def register_server(self, contxt: DiscordCtx):
         server_params = {
@@ -174,14 +177,14 @@ class DatabaseCommands(DatabaseManager):
             self.execute_query(INSERT_VISIT_INTO_VISITS, user_params)
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
-        return self.get_user_visits(contxt=contxt) # return the updated number of visits
+        return self.get_user_visits(contxt, contxt.user_id) # return the updated number of visits
 
-    def get_user_visits(self, contxt: DiscordCtx) -> int|DatabaseError:
+    def get_user_visits(self, contxt: DiscordCtx, lookup_id) -> int|DatabaseError:
         user_params = {
-            "user_id": contxt.user_id
+            "user_id": lookup_id
         }
-        if not self.user_in_db(contxt.user_id):
-            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
+        if not self.user_in_db(lookup_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({lookup_id}) not in the database.")
         num_visits = self.execute_query(SELECT_COUNT_USER_VISITS, user_params)[0][0]
         return num_visits
 
