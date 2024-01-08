@@ -183,7 +183,7 @@ class Commands(commands.Cog):
         """
         Alias for 'sesh yesterday'
         """
-        await self.sesh(ctx, offset=-1)
+        await self.sesh(ctx, offset="-1")
 
     # TODO - the below commands
     @commands.command()
