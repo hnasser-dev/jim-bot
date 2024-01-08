@@ -22,6 +22,7 @@ from src.utils.queries import (
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
     SELECT_USER_DATA_IN_CURR_SERVER,
+    SELECT_LAST_N_VISITS_DATES,
 )
 
 
@@ -165,7 +166,7 @@ class DatabaseCommands(DatabaseManager):
         try:
             day_offset = DayOffset(offset)
         except ValueError as e: # if not a valid value
-            return OtherError(contxt, ExecutionOutcome.WARNING, "Please supply a valid day offset between -7 and 0 inclusive. Or specify `yesterday`.")
+            return OtherError(contxt, ExecutionOutcome.WARNING, "Please supply a valid day offset between -7 and 0 inclusive. Or specify `yesterday`.", exception=e)
         timestamp = contxt.get_timestamp_str(day_offset=day_offset.value)
         user_params = {
             "user_id": contxt.user_id,
@@ -180,13 +181,33 @@ class DatabaseCommands(DatabaseManager):
         return self.get_user_visits(contxt, contxt.user_id) # return the updated number of visits
 
     def get_user_visits(self, contxt: DiscordCtx, lookup_id) -> int|DatabaseError:
-        user_params = {
-            "user_id": lookup_id
-        }
         if not self.user_in_db(lookup_id):
-            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({lookup_id}) not in the database.")
-        num_visits = self.execute_query(SELECT_COUNT_USER_VISITS, user_params)[0][0]
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User not in the database.")
+        try:
+            num_visits = self.execute_query(SELECT_COUNT_USER_VISITS, {"user_id": lookup_id})[0][0]
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return num_visits
+    
+    def get_last_n_visits_dates(self, contxt: DiscordCtx, lookup_id, n):
+        try:
+            n_int = int(n)
+        except ValueError as e:
+            return OtherError(contxt, ExecutionOutcome.WARNING, f"Most provide a value between 1 and 10 inclusive - eg `{BOT_PREFIX}last 5`.", exception=e)
+        else:
+            if n_int != float(n): # ie they provided a non-integer
+                return OtherError(contxt, ExecutionOutcome.WARNING, f"Most provide an **integer** value between 1 and 10 inclusive - eg `{BOT_PREFIX}last 5`.")
+        if n_int > 10 or n_int < 1:
+            return OtherError(contxt, ExecutionOutcome.WARNING, f"Most provide a value between 1 and 10 inclusive - eg `{BOT_PREFIX}last 5`.")
+        if not self.user_in_db(lookup_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User not in the database.")
+        try:
+            results = self.execute_query(SELECT_LAST_N_VISITS_DATES, {"user_id": lookup_id, "n": n}, return_columns=True)
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        return results
+
+
 
     def graphify(self, contxt: DiscordCtx):
         ...

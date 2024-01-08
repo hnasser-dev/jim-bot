@@ -21,9 +21,13 @@ class DatabaseManager:
             self.conn.close()
             print("Database disconnected.")
 
-    def execute_query(self, query, params={}) -> list:
+    def execute_query(self, query, params={}, return_columns=False):
         self.cursor.execute(query, params)
-        return self.cursor.fetchall()
+        column_names = [description[0] for description in self.cursor.description]
+        data = self.cursor.fetchall()
+        if return_columns: 
+            return data, column_names
+        return data
 
 
 # class CustomRowFactory:

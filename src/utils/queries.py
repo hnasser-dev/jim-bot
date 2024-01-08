@@ -125,3 +125,15 @@ WHERE user_servers.server_id = :server_id
 GROUP BY user_servers.user_id
 ORDER BY name
 """
+
+# retrieve the date of the last visit for a given user
+SELECT_LAST_N_VISITS_DATES = """\
+SELECT
+timestamp AS visit_date
+FROM users
+INNER JOIN visits
+ON users.id = visits.user_id
+WHERE users.id = :user_id
+ORDER BY timestamp
+LIMIT :n
+"""

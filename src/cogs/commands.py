@@ -1,8 +1,8 @@
 from discord.ext import commands
 from src.utils.helpers import DiscordCtx, ExecutionOutcome, DBTimezone
 from src.utils.error_handling import ExecutionError, DatabaseError, OtherError
-from asyncio import TimeoutError
 from src.utils.globals import TZ_LIST_URL, BOT_PREFIX
+from table2ascii import table2ascii
 
 
 class Commands(commands.Cog):
@@ -160,11 +160,12 @@ class Commands(commands.Cog):
         else:
             try:
                 offset = int(offset)
-            except ValueError:
+            except ValueError as e:
                 outcome = OtherError(
                     contxt,
                     ExecutionOutcome.WARNING,
-                    "Invalid date offset provided. Please supply a valid day offset between -7 and 0 inclusive"
+                    "Invalid date offset provided. Please supply a valid day offset between -7 and 0 inclusive",
+                    exception=e
                 )
                 await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
                 return
@@ -196,7 +197,7 @@ class Commands(commands.Cog):
             err = DatabaseError(contxt, ExecutionOutcome.WARNING, err_msg)
             await contxt.reply_to_user(err.text, err.level)
             return
-        visits = self.bot.database.get_user_visits(contxt, lookup_id, lookup_name)
+        visits = self.bot.database.get_user_visits(contxt, lookup_id)
         match self_lookup:
             case True:
                 if visits == 0: msg = "You have not been to the gym yet."
@@ -208,33 +209,43 @@ class Commands(commands.Cog):
                 else: msg = f"{lookup_name} has been to the gym {visits} times."
         await contxt.reply_to_user(msg)
 
-
-    # TODO - the below commands
-    @commands.command()
-    async def lastvisit(self, ctx, other=None):
-        contxt = DiscordCtx(ctx)
-        user_to_lookup = extract_id(other) if other else contxt.user_id
-        last_visit = self.bot.database.get_user_visits(contxt=contxt, user_id=user_to_lookup, last_n=1)
-        await contxt.reply_to_user("placeholder")
-
     @commands.command()
     async def last(self, ctx, num_visits, other=None):
-        """
-        Display the last <num_visits> visits for yourself or <other>
-        """
         contxt = DiscordCtx(ctx)
-        user_to_lookup = extract_id(other) if other else contxt.user_id
-        last_n_visits = self.bot.database.get_user_visits(contxt=contxt, user_id=user_to_lookup, last_n=num_visits)
-        await contxt.reply_to_user("placeholder")
+        lookup_id = contxt.user_id if not other else DiscordCtx.extract_id(other)
+        self_lookup = True if lookup_id == contxt.user_id else False
+        lookup_name = self.bot.database.get_user_name_from_id(user_id=lookup_id)
+        if not lookup_name:
+            err_msg = "You are not registered in the database." if self_lookup else "The provided user is not registered in the database."
+            err = DatabaseError(contxt, ExecutionOutcome.WARNING, err_msg)
+            await contxt.reply_to_user(err.text, err.level)
+            return
+        outcome = self.bot.database.get_last_n_visits_dates(contxt, lookup_id, n=num_visits)
+        if isinstance(outcome, ExecutionError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        dates, columns = outcome
+        refer_to_as = "You" if self_lookup else lookup_name
+        if int(num_visits) == 1:
+            msg = f"{refer_to_as} last visited the gym on {dates[0][0]}."
+        else:
+            data_table = table2ascii(header=columns, body=dates)
+            msg = f"```Last {num_visits} gym visits for {lookup_name}:\n{data_table}```"
+        await contxt.reply_to_user(msg)
 
+    @commands.command()
+    async def lastvisit(self, ctx, other=None):
+        await self.last(ctx, num_visits=1, other=other)
+
+
+
+    # TODO - the below commands
     @commands.command()
     async def table(self, ctx):
         contxt = DiscordCtx(ctx)
         table_data = self.bot.database.get_data_for_server(contxt=contxt)
         self.bot.database.conn.commit()
         await contxt.reply_to_user("<table>")
-
-
 
     @commands.command()
     async def graph(self, ctx, other=None):
