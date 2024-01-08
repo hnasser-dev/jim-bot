@@ -25,9 +25,6 @@ class DBTimezone:
         if self.identifier in pytz.all_timezones_set:
             return pytz.timezone(self.identifier)
 
-    def get_local_time_now(self):
-        self.local_tz = pytz.timezone(self.identifier)
-
     @staticmethod
     def get_local_time(time_unix, pytz_tz):
         dt_utc = datetime.fromtimestamp(time_unix)

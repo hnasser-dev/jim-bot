@@ -120,6 +120,12 @@ SELECT name FROM users
 WHERE id = :id
 """
 
+# retrieve a user's added_time
+SELECT_USER_ADDED_TIME_IN_USERS = """\
+SELECT added_time FROM users
+WHERE id = :id
+"""
+
 # retrieve the dates of the last n visits for a given user
 # in ascending order
 SELECT_LAST_N_VISITS_DATES = """\

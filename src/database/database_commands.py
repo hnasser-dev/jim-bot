@@ -19,6 +19,7 @@ from src.utils.queries import (
     UPDATE_TIMEZONE_IN_USERS,
     UPDATE_NAME_IN_USERS,
     SELECT_USER_NAME_IN_USERS,
+    SELECT_USER_ADDED_TIME_IN_USERS,
     INSERT_VISIT_INTO_VISITS,
     SELECT_COUNT_USER_VISITS,
     SELECT_ALL_USER_VISITS,
@@ -41,6 +42,10 @@ class DatabaseCommands(DatabaseManager):
     
     def get_user_name_from_id(self, user_id):
         results = self.execute_query(SELECT_USER_NAME_IN_USERS, {"id": user_id})
+        return None if len(results) < 1 else results[0][0]
+    
+    def get_user_join_time_from_id(self, user_id):
+        results = self.execute_query(SELECT_USER_ADDED_TIME_IN_USERS, {"id": user_id})
         return None if len(results) < 1 else results[0][0]
 
     def add_user_to_users(self, contxt: DiscordCtx):
@@ -186,11 +191,10 @@ class DatabaseCommands(DatabaseManager):
         if not self.user_in_db(lookup_id):
             return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User not in the database.")
         try:
-            visits_data = self.execute_query(SELECT_ALL_USER_VISITS, {"user_id": lookup_id}, return_columns=True)
+            unix_dates = self.execute_query(SELECT_ALL_USER_VISITS, {"user_id": lookup_id})
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
-        print(visits_data)
-        return visits_data
+        return unix_dates
 
     def get_num_user_visits(self, contxt: DiscordCtx, lookup_id) -> int|DatabaseError:
         if not self.user_in_db(lookup_id):
