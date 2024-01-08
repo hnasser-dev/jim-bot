@@ -146,14 +146,12 @@ class DatabaseCommands(DatabaseManager):
         #     return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
         try:
             user_results = self.execute_query(SELECT_USER_NAME_IN_USERS, {"id": contxt.user_id})
-            print(user_results)
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         else:
             if len(user_results) < 1:
                 return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) is not registered in this server.")
         old_username = user_results[0][0]
-        print(old_username, contxt.user_name)
         if old_username == contxt.user_name:
             return OtherError(contxt, ExecutionOutcome.ERROR, f"Your current username ({contxt.user_name}) is the same as your currently-registered username ({old_username}).")
         try:
@@ -207,14 +205,18 @@ class DatabaseCommands(DatabaseManager):
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return results
 
+    def get_visits_data_for_server(self, contxt: DiscordCtx):
+        if not self.server_in_db(contxt.server_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING,
+                f"This is not a registered server. Use `{BOT_PREFIX}registerserver` to register this server first."
+            )
+        params = {"server_id": contxt.server_id}
+        try:
+            results = self.execute_query(SELECT_USER_DATA_IN_CURR_SERVER, params, return_columns=True)
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        return results
 
 
     def graphify(self, contxt: DiscordCtx):
         ...
-
-    def get_data_for_server(self, contxt: DiscordCtx):
-        params = {
-            "server_id": contxt.server_id
-        }
-        data = self.execute_query(SELECT_USER_DATA_IN_CURR_SERVER, params)
-        print(data)

@@ -225,14 +225,14 @@ class Commands(commands.Cog):
         if isinstance(outcome, ExecutionError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        dates, columns = outcome
+        dates, column_names = outcome
         dates = [(datetime.fromtimestamp(date[0]).strftime("%d %b %Y"), DBTimezone.days_ago_str(contxt.timestamp, date[0])) for date in dates]
-        columns += ["days_ago"] # [visit_date, days_ago]
+        column_names += ["days_ago"] # [visit_date, days_ago]
         refer_to_as = "You" if self_lookup else lookup_name
         if int(num_visits) == 1:
             msg = f"{refer_to_as} last visited the gym on {dates[0][0]} ({dates[0][1]})."
         else:
-            data_table = table2ascii(header=columns, body=dates)
+            data_table = table2ascii(header=column_names, body=dates)
             msg = f"```Last {num_visits} gym visits for {lookup_name}:\n{data_table}```"
         await contxt.reply_to_user(msg)
 
@@ -240,16 +240,28 @@ class Commands(commands.Cog):
     async def lastvisit(self, ctx, other=None):
         await self.last(ctx, num_visits=1, other=other)
 
-
-
-    # TODO - the below commands
     @commands.command()
     async def table(self, ctx):
         contxt = DiscordCtx(ctx)
-        table_data = self.bot.database.get_data_for_server(contxt=contxt)
-        self.bot.database.conn.commit()
-        await contxt.reply_to_user("<table>")
+        outcome = self.bot.database.get_visits_data_for_server(contxt=contxt)
+        if isinstance(outcome, DatabaseError):
+            await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
+            return
+        data, column_names = outcome
+        if not data:
+            err = OtherError(contxt, ExecutionOutcome.WARNING, f"No users have yet registered in {contxt.server_name}.")
+            await contxt.reply_to_user(err.text, err.level)
+            return
+        data_table = table2ascii(header=column_names, body=data)
+        await contxt.reply_to_user(f"```Gym visits data for {contxt.server_name}:\n{data_table}```")
 
+    @commands.command()
+    async def all(self, ctx):
+        """ Alias for jim/table """
+        await self.table(ctx)
+
+
+    # TODO - the below commands
     @commands.command()
     async def graph(self, ctx, other=None):
         contxt = DiscordCtx(ctx)

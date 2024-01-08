@@ -109,23 +109,6 @@ SELECT name FROM users
 WHERE id = :id
 """
 
-# display user data for all users in the server
-# left outer join is to include users who haven't been to the gym yet.
-SELECT_USER_DATA_IN_CURR_SERVER = """\
-SELECT
-users.name AS name,
-users.id AS discord_id,
-COUNT(visits.timestamp) AS timestamp
-FROM users
-INNER JOIN user_servers
-ON users.id = user_servers.user_id
-LEFT OUTER JOIN visits
-ON user_servers.user_id = visits.user_id
-WHERE user_servers.server_id = :server_id
-GROUP BY user_servers.user_id
-ORDER BY name
-"""
-
 # retrieve the date of the last visit for a given user
 SELECT_LAST_N_VISITS_DATES = """\
 SELECT
@@ -136,4 +119,21 @@ ON users.id = visits.user_id
 WHERE users.id = :user_id
 ORDER BY timestamp DESC
 LIMIT :n
+"""
+
+# display user data for all users in the server
+# left outer join is to include users who haven't been to the gym yet.
+SELECT_USER_DATA_IN_CURR_SERVER = """\
+SELECT
+users.name AS name,
+users.id AS discord_id,
+COUNT(visits.timestamp) AS num_visits
+FROM users
+INNER JOIN user_servers
+ON users.id = user_servers.user_id
+LEFT OUTER JOIN visits
+ON user_servers.user_id = visits.user_id
+WHERE user_servers.server_id = :server_id
+GROUP BY user_servers.user_id
+ORDER BY name
 """
