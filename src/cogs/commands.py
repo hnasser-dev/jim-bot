@@ -3,6 +3,7 @@ from src.utils.helpers import DiscordCtx, ExecutionOutcome, DBTimezone
 from src.utils.error_handling import ExecutionError, DatabaseError, OtherError
 from src.utils.globals import TZ_LIST_URL, BOT_PREFIX
 from table2ascii import table2ascii
+from datetime import datetime
 
 
 class Commands(commands.Cog):
@@ -225,9 +226,11 @@ class Commands(commands.Cog):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
         dates, columns = outcome
+        dates = [(datetime.fromtimestamp(date[0]).strftime("%d %b %Y"), DBTimezone.days_ago_str(contxt.timestamp, date[0])) for date in dates]
+        columns += ["days_ago"] # [visit_date, days_ago]
         refer_to_as = "You" if self_lookup else lookup_name
         if int(num_visits) == 1:
-            msg = f"{refer_to_as} last visited the gym on {dates[0][0]}."
+            msg = f"{refer_to_as} last visited the gym on {dates[0][0]} ({dates[0][1]})."
         else:
             data_table = table2ascii(header=columns, body=dates)
             msg = f"```Last {num_visits} gym visits for {lookup_name}:\n{data_table}```"

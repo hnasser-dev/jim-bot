@@ -167,7 +167,7 @@ class DatabaseCommands(DatabaseManager):
             day_offset = DayOffset(offset)
         except ValueError as e: # if not a valid value
             return OtherError(contxt, ExecutionOutcome.WARNING, "Please supply a valid day offset between -7 and 0 inclusive. Or specify `yesterday`.", exception=e)
-        timestamp = contxt.get_timestamp_str(day_offset=day_offset.value)
+        timestamp = contxt.get_unix_timestamp_int(day_offset=day_offset.value)
         user_params = {
             "user_id": contxt.user_id,
             "timestamp": timestamp

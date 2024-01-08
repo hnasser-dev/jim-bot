@@ -134,6 +134,6 @@ FROM users
 INNER JOIN visits
 ON users.id = visits.user_id
 WHERE users.id = :user_id
-ORDER BY timestamp
+ORDER BY timestamp DESC
 LIMIT :n
 """

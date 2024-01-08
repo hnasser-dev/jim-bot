@@ -23,9 +23,9 @@ class DatabaseManager:
 
     def execute_query(self, query, params={}, return_columns=False):
         self.cursor.execute(query, params)
-        column_names = [description[0] for description in self.cursor.description]
         data = self.cursor.fetchall()
         if return_columns: 
+            column_names = [description[0] for description in self.cursor.description]
             return data, column_names
         return data
 

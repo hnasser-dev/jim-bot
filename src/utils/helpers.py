@@ -28,7 +28,17 @@ class DBTimezone:
     def get_local_time_now(self):
         self.local_tz = pytz.timezone(self.identifier)
 
-
+    @staticmethod
+    def days_ago_str(curr_unix: float, past_unix: float):
+        days_ago = int((curr_unix - past_unix) / 86400)
+        match days_ago:
+            case 0:
+                return "<1 day ago"
+            case 1:
+                return "1 day ago"
+            case _ if days_ago > 1:
+                return f"{days_ago} days ago"
+            
 class DiscordCtx:
     def __init__(self, ctx: commands.Context, mentioned_user=None):
         self.ctx = ctx # for accessing attributes of the original ctx object
@@ -36,7 +46,7 @@ class DiscordCtx:
         self.user_name = str(ctx.author.name)
         self.server_id = str(ctx.guild.id) if ctx.guild else None
         self.server_name = str(ctx.guild)
-        self.timestamp = self.get_timestamp_str(initial=True)
+        self.timestamp = self.get_unix_timestamp_int(initial=True)
         self.mentioned_user = DiscordCtx.extract_id(mentioned_user) if mentioned_user else None
 
     async def reply_to_user(self, message: str, exec_outcome=ExecutionOutcome.DEFAULT, ping=False) -> None:
@@ -47,13 +57,12 @@ class DiscordCtx:
         # prepend an appropriate emoji (if required) then reply to the user
         reply_msg = DiscordCtx.emojify_str(message, exec_outcome)
         await self.ctx.reply(reply_msg, mention_author=ping)
+    
+    def get_unix_timestamp_int(self, initial=False, day_offset=0):
+        if initial:
+            return datetime.utcnow().timestamp()
+        return self.timestamp + (day_offset * 86400)
 
-    def get_timestamp_str(self, initial=False, day_offset=0):
-        date_format = "%Y-%m-%d %H:%M:%S"
-        if initial: # if called from init
-            return datetime.utcnow().strftime(date_format)
-        timestamp = datetime.strptime(self.timestamp, date_format) + timedelta(day_offset)
-        return timestamp.strftime(date_format)
 
     @staticmethod
     def emojify_str(msg, exec_outcome):
