@@ -5,7 +5,6 @@ import tempfile
 import discord
 from datetime import datetime
 from calplot import calplot
-from src.utils.globals import GRAPHING_DIR_PATH
 
 
 def graph_data(start_dt_local, curr_date_dt_local, visit_dates_dt_local, user_name):

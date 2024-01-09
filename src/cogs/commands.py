@@ -2,7 +2,7 @@ from discord.ext import commands
 from src.utils.helpers import DiscordCtx, ExecutionOutcome, DBTimezone
 from src.utils.error_handling import ExecutionError, DatabaseError, OtherError
 from src.utils.globals import TZ_LIST_URL, BOT_PREFIX
-import src.graphing as graphing
+import src.utils.graphing as graphing
 from table2ascii import table2ascii
 from datetime import datetime
 
