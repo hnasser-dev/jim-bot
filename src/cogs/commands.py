@@ -274,7 +274,6 @@ class Commands(commands.Cog):
         """ Alias for jim/table """
         await self.table(ctx)
 
-    # TODO - the below commands
     @commands.command()
     async def graph(self, ctx, other=None):
         contxt = DiscordCtx(ctx)
@@ -290,22 +289,17 @@ class Commands(commands.Cog):
         if isinstance(outcome, ExecutionError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        if len(outcome) < 1:
+            err_msg = "You haven't been to the gym yet!" if self_lookup else f"{lookup_name} hasn't been to the gym yet!"
+            err = OtherError(contxt, ExecutionOutcome.DEFAULT, err_msg)
+            await contxt.reply_to_user(err.text, err.level)
+            return
         timezone_id = self.bot.database.get_timezone(contxt, lookup_info=(lookup_name, lookup_id))
         timezone = DBTimezone(timezone_id)
         if not timezone.pytz_tz: # if for some reason the timezone in the db is not valid
             err = OtherError(contxt, ExecutionOutcome.ERROR)
             await contxt.reply_to_user(err.text, err.level)
             return
-        # unix_dates = outcome
-        # print(outcome)
-        # local times
-        # user_added_time = self.bot.database.get_user_join_time_from_id(contxt.user_id)
-        # dates = []
-        # for unix_date, in unix_dates: # leave the , --> needed to unpack size 1 tuple
-        #     local_dt = DBTimezone.get_local_time(unix_date, timezone.pytz_tz)
-        #     dates.append(local_dt)
-        # print(dates)
-
         # graphing
         unix_dates = outcome
         user_added_time = self.bot.database.get_user_join_time_from_id(lookup_id)
@@ -322,17 +316,15 @@ class Commands(commands.Cog):
         print(local_dates)
         curr_dt_local = DBTimezone.get_local_time(contxt.timestamp, timezone.pytz_tz)
         print(curr_dt_local)
-        graph_file_path = graphing.graph_data(
+        graph_file = graphing.graph_data(
             start_dt_local=user_added_time_local_dt,
             curr_date_dt_local=curr_dt_local,
-            all_dates_dt_local=local_dates,
+            visit_dates_dt_local=local_dates,
+            user_name=lookup_name
         )
+        await contxt.ctx.reply(file=graph_file, mention_author=False)
 
-        # await contxt.reply_to_user(file=graph_file)
-
-
-
-
+    # TODO - the below commands
     @commands.command()
     async def helpme(self, ctx):
         contxt = DiscordCtx(ctx)
