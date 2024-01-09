@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib
 import tempfile
 import discord
-from datetime import datetime
 from calplot import calplot
 
 
