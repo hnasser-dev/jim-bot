@@ -29,20 +29,3 @@ class DatabaseManager:
             column_names = [description[0] for description in self.cursor.description]
             return data, column_names
         return data
-
-
-# class CustomRowFactory:
-#     def __init__(self, cursor, row):
-#         for idx, col in enumerate(cursor.description):
-#             setattr(self, col[0], row[idx])
-
-        
-# def dict_factory(cursor, row):
-#     """
-#     Allows sqlite3 row data to be returned as a dictionary (per row)
-#     (By default in sqlite3, rows are returned as tuples)
-#     Usage:
-#         conn.row_factory = dict_factory
-#     """
-#     fields = [column[0] for column in cursor.description]
-#     return {key:value for key,value in zip(fields, row)}
