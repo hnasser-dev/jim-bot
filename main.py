@@ -10,6 +10,7 @@ from src.utils.globals import (
     COGS_PATH
 )
 from src.database.database_commands import DatabaseCommands
+import sys
 
 
 class MyBot(commands.Bot):
@@ -17,7 +18,8 @@ class MyBot(commands.Bot):
         super().__init__(
             command_prefix=command_prefix,
             description=description,
-            intents=intents
+            intents=intents,
+            help_command=None
         )
         self.database = DatabaseCommands(DB_PATH)
 
@@ -25,16 +27,13 @@ class MyBot(commands.Bot):
         print(f"Logged in as {self.user}.")
 
     async def load_cogs(self):
-        # cogs_dir = f"{Path(__file__).parent}/cogs"
-        print(COGS_PATH)
         for file in os.listdir(COGS_PATH):
             if file.endswith(".py"):
                 extension_name = file[:-3]
-                print(extension_name)
                 try:
                     await self.load_extension(f"src.cogs.{extension_name}")
                 except commands.ExtensionError as e:
-                    print(e)
+                    sys.exit(f"Error loading extension: {e}")
                 else:
                     print(f"{extension_name} loaded")
 
@@ -48,7 +47,7 @@ def main():
     bot = MyBot(
         command_prefix="jim/",
         description="Jim Bot",
-        intents=Intents.all()
+        intents=Intents.all(),
     )
     bot.run(token)
 

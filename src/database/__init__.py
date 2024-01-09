@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 
 
 class DatabaseManager:
@@ -13,7 +14,7 @@ class DatabaseManager:
             self.cursor = self.conn.cursor()
             print("Database connected.")
         except sqlite3.Error as e:
-            print(f"Database connection error: {e}")
+            sys.exit(f"Database connection error: {e}")
 
     def disconnect(self):
         if self.conn:

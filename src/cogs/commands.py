@@ -4,7 +4,7 @@ from src.utils.error_handling import ExecutionError, DatabaseError, OtherError
 from src.utils.globals import TZ_LIST_URL, BOT_PREFIX
 import src.utils.graphing as graphing
 from table2ascii import table2ascii
-from datetime import datetime
+import textwrap
 
 
 class Commands(commands.Cog):
@@ -112,11 +112,11 @@ class Commands(commands.Cog):
             outcome = OtherError(
                 contxt,
                 text=(f"Usage: `{BOT_PREFIX}settimezone <timezone_identifier>`\n"
-                f"If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone options`.")
+                f"If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone details`.")
             )
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        if tz_identifier.lower() == "options":
+        if tz_identifier.lower() == "details":
             outcome = OtherError(
                 contxt,
                 text = ("List of timezone identifiers (use the `TZ identifier` column - eg `America/New_York`):\n"
@@ -304,7 +304,6 @@ class Commands(commands.Cog):
         unix_dates = outcome
         user_added_time = self.bot.database.get_user_join_time_from_id(lookup_id)
         user_added_time_local_dt = DBTimezone.get_local_time(user_added_time, timezone.pytz_tz)
-        print(user_added_time_local_dt)
         if not user_added_time: # if for some reason the user join_time can't be found
             err = OtherError(contxt, ExecutionOutcome.ERROR)
             await contxt.reply_to_user(err.text, err.level)
@@ -313,9 +312,7 @@ class Commands(commands.Cog):
         for unix_date, in unix_dates: # leave the , --> needed to unpack size 1 tuple
             local_dt = DBTimezone.get_local_time(unix_date, timezone.pytz_tz)
             local_dates.append(local_dt)
-        print(local_dates)
         curr_dt_local = DBTimezone.get_local_time(contxt.timestamp, timezone.pytz_tz)
-        print(curr_dt_local)
         graph_file = graphing.graph_data(
             start_dt_local=user_added_time_local_dt,
             curr_date_dt_local=curr_dt_local,
@@ -324,11 +321,29 @@ class Commands(commands.Cog):
         )
         await contxt.ctx.reply(file=graph_file, mention_author=False)
 
-    # TODO - the below commands
     @commands.command()
-    async def helpme(self, ctx):
+    async def help(self, ctx):
         contxt = DiscordCtx(ctx)
-        await contxt.reply_to_user("placeholder")
+        commands_msg = textwrap.dedent(f"""\
+            `{BOT_PREFIX}register` --> register yourself for tracking
+            `{BOT_PREFIX}deregister` --> deregister yourself from tracking
+            `{BOT_PREFIX}registerserver` --> register this server for tracking
+            `{BOT_PREFIX}joinserver` --> associate yourself with this server
+            `{BOT_PREFIX}leaveserver` --> disassociate yourself from this server
+            `{BOT_PREFIX}sesh [day_offset]` --> record a gym session (`day_offset` can record seshes `up to 7 days into the past`)
+            `{BOT_PREFIX}seshterday` --> record a gym session for yesterday (`day offset = -1`)
+            `{BOT_PREFIX}visits [@user]` --> see how many times you (or someone else) has been to the gym
+            `{BOT_PREFIX}last <N> [@user]` --> look at your (or someone else's) `last N gym visits`
+            `{BOT_PREFIX}lastvisit [@user]` --> look up when you (or someone else) last went to the gym
+            `{BOT_PREFIX}table` --> show details for users registered in this server
+            `{BOT_PREFIX}all` --> same as `{BOT_PREFIX}table`
+            `{BOT_PREFIX}timezone` --> retrieve your current timezone (default UTC)
+            `{BOT_PREFIX}settimezone <timezone>` --> set yourself a new timezone (`{BOT_PREFIX}settimezone details` for more details)
+            `{BOT_PREFIX}graph [@user]` --> view your (or someone else's) gym visits as a graph
+            `{BOT_PREFIX}updatename` --> update your name in the database to your current Discord username
+            `{BOT_PREFIX}help` --> *commandception intensifies*
+        """)
+        await contxt.reply_to_user(commands_msg)
 
 
 async def setup(bot):
