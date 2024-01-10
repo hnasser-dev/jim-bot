@@ -129,7 +129,7 @@ class Commands(commands.Cog):
                 contxt,
                 level = ExecutionOutcome.WARNING,
                 text = (f"{tz_identifier} is not a valid timezone identifier.\n"
-                        f"If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone <timezone_identifier>`.")
+                        f"If you wish to find your timezone identifier, use `{BOT_PREFIX}settimezone details`.")
             )
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
