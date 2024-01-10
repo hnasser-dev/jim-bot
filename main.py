@@ -23,6 +23,7 @@ class MyBot(commands.Bot):
             command_prefix=command_prefix,
             description=description,
             intents=intents,
+            case_insensitive=True,
             help_command=None
         )
         self.admin_id = admin_id
