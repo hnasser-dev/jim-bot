@@ -30,6 +30,7 @@ ADMIN_COGS_PATH = os.path.join(ADMIN_DIR_PATH, "cogs")
 
 """ Bot """
 BOT_PREFIX = "jim/"
+DISCORD_INVITE_LINK = os.environ["DISCORD_INVITE_LINK"]
 
 """ Other """
 TZ_LIST_URL = "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"

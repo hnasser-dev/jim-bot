@@ -1,7 +1,7 @@
 from discord.ext import commands
 from src.utils.helpers import DiscordCtx, ExecutionOutcome, DBTimezone
 from src.utils.error_handling import ExecutionError, DatabaseError, OtherError
-from src.utils.globals import TZ_LIST_URL, BOT_PREFIX
+from src.utils.globals import TZ_LIST_URL, BOT_PREFIX, DISCORD_INVITE_LINK
 import src.utils.graphing as graphing
 from table2ascii import table2ascii
 import textwrap
@@ -10,6 +10,10 @@ import textwrap
 class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    async def invite(self, ctx):
+        await ctx.reply(f"Bot invite link:\n{DISCORD_INVITE_LINK}")
 
     @commands.command()
     async def register(self, ctx):
@@ -340,6 +344,7 @@ class Commands(commands.Cog):
             `{BOT_PREFIX}settimezone <timezone>` --> set yourself a new timezone (`{BOT_PREFIX}settimezone details` for more details)
             `{BOT_PREFIX}graph [@user]` --> view your (or someone else's) gym visits as a graph
             `{BOT_PREFIX}updatename` --> update your name in the database to your current Discord username
+            `{BOT_PREFIX}invite` --> retrieve the invite link for this bot
             `{BOT_PREFIX}help` --> *commandception intensifies*
         """)
         await contxt.reply_to_user(commands_msg)
