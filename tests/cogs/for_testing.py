@@ -1,7 +1,7 @@
 from discord.ext import commands
 
 
-class Tests(commands.Cog):
+class ForTesting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.prefix = self.bot.command_prefix
@@ -9,10 +9,13 @@ class Tests(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, full_command_msg):        
         if full_command_msg.content.startswith(self.prefix):
-            command_name, args = self.parse_full_command_str(full_command_msg.content)
-            fake_ctx = await self.bot.get_context(full_command_msg)
-            fake_ctx.command = self.bot.get_command(command_name)
-            await self.bot.invoke(fake_ctx)
+            # only invoke the message this way if the message is from a bot
+            # otherwise the command will get invoked twice if triggered by a real/human account
+            if full_command_msg.author.bot:
+                command_name, args = self.parse_full_command_str(full_command_msg.content)
+                fake_ctx = await self.bot.get_context(full_command_msg)
+                fake_ctx.command = self.bot.get_command(command_name)
+                await self.bot.invoke(fake_ctx)
 
     @commands.command()
     async def sayhello(self, ctx):
@@ -29,4 +32,4 @@ class Tests(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Tests(bot))
+    await bot.add_cog(ForTesting(bot))

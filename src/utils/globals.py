@@ -13,7 +13,7 @@ DEBUG = os.environ.get("DEBUG", "False")
 BOT_TOKEN = os.environ["DISCORD_GYM_BOT_TOKEN"]
 BOT_TEST_TOKEN = os.environ["BOT_TEST_TOKEN"]
 BOT_TEST2_TOKEN = os.environ["BOT_TEST2_TOKEN"]
-DISCORD_ADMIN_ID = os.environ["DISCORD_ADMIN_ID"]
+DISCORD_ADMIN_ID = int(os.environ["DISCORD_ADMIN_ID"])
 DISCORD_INVITE_LINK = os.environ["DISCORD_INVITE_LINK"]
 
 """ Absolute file paths """
@@ -24,6 +24,8 @@ DB_PATH = os.path.join(SRC_DIR_PATH, "database/bot.db")
 COGS_PATH = os.path.join(SRC_DIR_PATH, "cogs")
 TEST_DIR_PATH = os.path.join(SRC_DIR_PATH.parent, "tests")
 TEST_COGS_PATH = os.path.join(TEST_DIR_PATH, "cogs")
+ADMIN_DIR_PATH = os.path.join(SRC_DIR_PATH.parent, "admin")
+ADMIN_COGS_PATH = os.path.join(ADMIN_DIR_PATH, "cogs")
 
 """ Bot """
 BOT_PREFIX = "jim/"
