@@ -8,14 +8,12 @@ from src.utils.globals import BOT_PREFIX
 
 @pytest_asyncio.fixture
 async def bot():
-    # Setup
     bot = MyBot(
         command_prefix=BOT_PREFIX,
         description="Test Bot",
         intents=Intents.all()
     )
-
-    await bot._async_setup_hook()  # setup the loop
+    await bot._async_setup_hook() # setup the loop
     await bot.add_cog(Commands(bot))
     dpytest.configure(bot)
     yield bot
