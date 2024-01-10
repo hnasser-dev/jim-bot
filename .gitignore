@@ -1,4 +1,4 @@
-.*
+/.*
 !/.gitignore
 /transfer/
 __pycache__

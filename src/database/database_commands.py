@@ -234,7 +234,3 @@ class DatabaseCommands(DatabaseManager):
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return results
-
-
-    def graphify(self, contxt: DiscordCtx):
-        ...
