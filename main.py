@@ -1,3 +1,4 @@
+import asyncio
 from discord import Intents
 from discord.ext import commands
 from pathlib import Path
@@ -42,15 +43,16 @@ class MyBot(commands.Bot):
         await self.load_cogs()
 
 
-def main():
+async def main():
     token = BOT_TOKEN if DEBUG == "False" else BOT_TEST_TOKEN
     bot = MyBot(
         command_prefix="jim/",
         description="Jim Bot",
         intents=Intents.all(),
     )
-    bot.run(token)
+    await bot.start(token)
 
 
 if __name__ == "__main__":
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
