@@ -75,6 +75,7 @@ Ensure that it has the following key-value pairs listed.
     ```
     DEBUG="False"
     DISCORD_GYM_BOT_TOKEN="<bot_token>"
+    BOT_TEST_TOKEN="<put_anything_here>"
     DISCORD_ADMIN_ID="<your_personal_discord_ID>"
     DISCORD_INVITE_LINK="<bot_invite_link>"
     ```

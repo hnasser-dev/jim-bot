@@ -12,7 +12,6 @@ load_dotenv()
 DEBUG = os.environ.get("DEBUG", "False")
 BOT_TOKEN = os.environ["DISCORD_GYM_BOT_TOKEN"]
 BOT_TEST_TOKEN = os.environ["BOT_TEST_TOKEN"]
-BOT_TEST2_TOKEN = os.environ["BOT_TEST2_TOKEN"]
 DISCORD_ADMIN_ID = int(os.environ["DISCORD_ADMIN_ID"])
 DISCORD_INVITE_LINK = os.environ["DISCORD_INVITE_LINK"]
 
