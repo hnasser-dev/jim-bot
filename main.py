@@ -54,17 +54,6 @@ class MyBot(commands.Bot):
                         print(f"{self.description}: {extension_name} loaded")
             sys.path.pop(0)
 
-    async def setup_hook(self):
-        """ Runs when the bot first starts up """
-        await self.load_cogs()
-
-    async def async_startup(self, bot_token):
-        await self.start(bot_token)
-        await self.setup_hook()  # Call setup after bot is connected
-
-    async def async_shutdown(self):
-        await self.close()
-
 
 async def main():
     token = BOT_TOKEN if DEBUG == "False" else BOT_TEST_TOKEN
