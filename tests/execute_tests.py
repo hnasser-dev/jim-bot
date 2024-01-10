@@ -28,6 +28,11 @@ async def start_tests(token, invoke_prefix, discord_admin_id):
         print(f"Logged in as {bot.description}.")
 
     @bot.command()
+    async def echo(ctx, *args):
+        new_command = " ".join(args)
+        await ctx.send(new_command)
+
+    @bot.command()
     async def commence_test(ctx):
         print("Commencing tests...")
         commands = ["sayhello", "saygoodbye bot1", "saygoodbye bot2"]

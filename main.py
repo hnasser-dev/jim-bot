@@ -70,7 +70,8 @@ async def main():
         command_prefix="jim/",
         description="Jim Bot",
         intents=Intents.all(),
-        admin_id=DISCORD_ADMIN_ID
+        admin_id=DISCORD_ADMIN_ID,
+        load_admin_commands=True
     )
     await bot.start(token)
 

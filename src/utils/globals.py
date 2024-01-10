@@ -19,12 +19,13 @@ DISCORD_INVITE_LINK = os.environ["DISCORD_INVITE_LINK"]
 """ Absolute file paths """
 ENV_PY_PATH = Path(__file__)
 SRC_DIR_PATH = ENV_PY_PATH.parent.parent
+PROJECT_ROOT_PATH = SRC_DIR_PATH.parent
 LOG_FILE_PATH = os.path.join(SRC_DIR_PATH, f"logs/bot.log")
 DB_PATH = os.path.join(SRC_DIR_PATH, "database/bot.db")
 COGS_PATH = os.path.join(SRC_DIR_PATH, "cogs")
-TEST_DIR_PATH = os.path.join(SRC_DIR_PATH.parent, "tests")
+TEST_DIR_PATH = os.path.join(PROJECT_ROOT_PATH, "tests")
 TEST_COGS_PATH = os.path.join(TEST_DIR_PATH, "cogs")
-ADMIN_DIR_PATH = os.path.join(SRC_DIR_PATH.parent, "admin")
+ADMIN_DIR_PATH = os.path.join(PROJECT_ROOT_PATH, "admin")
 ADMIN_COGS_PATH = os.path.join(ADMIN_DIR_PATH, "cogs")
 
 """ Bot """
