@@ -6,24 +6,31 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from main import MyBot
 from src.utils.globals import (
     BOT_TEST_TOKEN,
-    BOT_TEST2_TOKEN
+    BOT_TEST2_TOKEN,
+    DISCORD_ADMIN_ID
 )
 import discord
+from discord.ext import commands
 import threading
 import asyncio
 import tests.response_bot as response_bot
 
 
-async def start_tests(token, invoke_prefix):
-    bot = MyBot(
+async def start_tests(token, invoke_prefix, discord_admin_id):
+    bot = commands.Bot(
         command_prefix="invoke_bot/",
         description="Invoke Bot",
-        intents=discord.Intents.all()
+        intents=discord.Intents.all(),
     )
 
     @bot.event
     async def on_ready():
-        print("invoke_bot ready")
+        print(f"Logged in as {bot.description}.")
+
+    @bot.command()
+    async def echo(ctx, *args):
+        new_command = " ".join(args)
+        await ctx.send(new_command)
 
     @bot.command()
     async def commence_test(ctx):
@@ -39,9 +46,10 @@ async def start_tests(token, invoke_prefix):
 if __name__ == '__main__':
     # bot which runs in the background and responds to commands
     test_bot_prefix = "test_bot/"
-    test_bot = threading.Thread(target=response_bot.run_bot, args=(MyBot, test_bot_prefix, BOT_TEST_TOKEN))
+    test_bot = threading.Thread(target=response_bot.run_bot, args=(MyBot, test_bot_prefix, DISCORD_ADMIN_ID, BOT_TEST_TOKEN))
     test_bot.start()
 
-    asyncio.run(start_tests(BOT_TEST2_TOKEN, invoke_prefix=test_bot_prefix))
+    # bot that runs test cases by invoking commands
+    asyncio.run(start_tests(BOT_TEST2_TOKEN, invoke_prefix=test_bot_prefix, discord_admin_id=DISCORD_ADMIN_ID))
 
     test_bot.join()

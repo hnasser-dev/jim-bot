@@ -1,6 +1,6 @@
 .*
 !/.gitignore
-/admin/
+/transfer/
 __pycache__
 **/*.db
 **/*.sqlite
