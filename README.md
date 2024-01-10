@@ -20,7 +20,7 @@ Associate yourself with the current (registered) server. This causes you to show
 `jim/leaveserver`<br>
 Disassociate yourself from the current (registered) server. Prevents you from appearing on `jim/table` when it is used.
 
-`jim/sesh [OPTIONAL_day_offset]`<br>
+`jim/sesh [day_offset]`<br>
 By default, this will record a gym visit for the current date and time. `day_offset` allows you to specify an integer, between -7 and 0 inclusive, indicating how many days you wish to backdate the session. EG to record a gym visit for 2 days ago, you would use `jim/sesh -2`.
 
 `jim/seshterday`<br>
