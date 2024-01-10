@@ -8,6 +8,7 @@ from src.utils.globals import (
     BOT_TEST_TOKEN,
     DEBUG,
     DISCORD_ADMIN_ID,
+    BOT_PREFIX,
     DB_PATH,
     COGS_PATH,
     TEST_COGS_PATH,
@@ -67,8 +68,9 @@ class MyBot(commands.Bot):
 
 async def main():
     token = BOT_TOKEN if DEBUG == "False" else BOT_TEST_TOKEN
+    prefixes = [BOT_PREFIX, BOT_PREFIX.title()] # both lowercase and title case are options
     bot = MyBot(
-        command_prefix="jim/",
+        command_prefix=commands.when_mentioned_or(*prefixes),
         description="Jim Bot",
         intents=Intents.all(),
         admin_id=DISCORD_ADMIN_ID,
