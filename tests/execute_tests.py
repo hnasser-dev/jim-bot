@@ -11,8 +11,7 @@ from src.utils.globals import (
 import discord
 import threading
 import asyncio
-import tests.response_bot as bot1
-import tests.response_bot as bot2
+import tests.response_bot as response_bot
 
 
 async def start_tests(token, invoke_prefix):
@@ -40,7 +39,7 @@ async def start_tests(token, invoke_prefix):
 if __name__ == '__main__':
     # bot which runs in the background and responds to commands
     test_bot_prefix = "test_bot/"
-    test_bot = threading.Thread(target=bot1.run_bot, args=(MyBot, test_bot_prefix, BOT_TEST_TOKEN))
+    test_bot = threading.Thread(target=response_bot.run_bot, args=(MyBot, test_bot_prefix, BOT_TEST_TOKEN))
     test_bot.start()
 
     asyncio.run(start_tests(BOT_TEST2_TOKEN, invoke_prefix=test_bot_prefix))
