@@ -102,7 +102,6 @@ class Commands(commands.Cog):
         if isinstance(outcome, DatabaseError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
-        self.bot.database.conn.commit()
         await contxt.reply_to_user(f"Your current timezone is `{outcome}`.")
 
     @commands.command()
