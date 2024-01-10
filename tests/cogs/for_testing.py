@@ -1,6 +1,5 @@
 from discord.ext import commands
 
-
 class ForTesting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -24,6 +23,14 @@ class ForTesting(commands.Cog):
     @commands.command()
     async def saygoodbye(self, ctx, name):
         await ctx.reply(f"goodbye, {name}")
+
+    @commands.command()
+    async def say_id(self, ctx):
+        await ctx.reply(f"Your ID is: {ctx.author.id}")
+
+    @commands.command()
+    async def say_name(self, ctx):
+        await ctx.reply(f"Your name is: {ctx.author.name}")
 
     def parse_full_command_str(self, full_command_str):
         prefix_and_command, *args = full_command_str.split()
