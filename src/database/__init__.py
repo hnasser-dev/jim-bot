@@ -28,4 +28,5 @@ class DatabaseManager:
         if return_columns: 
             column_names = [description[0] for description in self.cursor.description]
             return data, column_names
+        self.conn.commit()
         return data

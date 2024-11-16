@@ -249,6 +249,12 @@ class Commands(commands.Cog):
         if isinstance(outcome, ExecutionError):
             await contxt.reply_to_user(outcome.text, exec_outcome=outcome.level)
             return
+        if not outcome[0]: # no dates recorded:
+            await contxt.reply_to_user(
+                "You do not have any seshes recorded.",
+                exec_outcome=ExecutionOutcome.WARNING
+            )
+            return
         timezone_id = self.bot.database.get_timezone(contxt, lookup_info=(lookup_name, lookup_id))
         timezone = DBTimezone(timezone_id)
         if not timezone.pytz_tz: # if for some reason the timezone in the db is not valid
