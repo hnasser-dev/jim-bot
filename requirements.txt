@@ -15,6 +15,7 @@ idna==3.6
 iniconfig==2.0.0
 install==1.3.5
 kiwisolver==1.4.5
+logzero==1.7.0
 matplotlib==3.8.2
 mbstrdecoder==1.1.3
 multidict==6.0.4
