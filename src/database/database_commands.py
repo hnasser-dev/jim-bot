@@ -25,6 +25,7 @@ from src.utils.queries import (
     SELECT_ALL_USER_VISITS,
     SELECT_USER_DATA_IN_CURR_SERVER,
     SELECT_LAST_N_VISITS_DATES,
+    REMOVE_MOST_RECENT_VISIT
 )
 
 
@@ -124,7 +125,7 @@ class DatabaseCommands(DatabaseManager):
             "user_id": contxt.user_id,
         }
         try:
-            user_results = self.execute_query(SELECT_USER_SERVERS, params)
+            _ = self.execute_query(SELECT_USER_SERVERS, params)
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         try:
@@ -234,3 +235,19 @@ class DatabaseCommands(DatabaseManager):
         except sqlite3.Error as e:
             return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
         return results
+
+    def remove_last_visit_for_user(self, contxt: DiscordCtx):
+        if not self.user_in_db(contxt.user_id):
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) not in the database.")
+        user_params = {"user_id": contxt.user_id}
+        try:
+            num_visits = self.execute_query(SELECT_COUNT_USER_VISITS, user_params)[0][0]
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)
+        assert isinstance(num_visits, int)
+        if num_visits < 1:
+            return DatabaseError(contxt, ExecutionOutcome.WARNING, f"User ({contxt.user_name}) does not have a sesh to remove.")
+        try:
+            self.execute_query(REMOVE_MOST_RECENT_VISIT, user_params)
+        except sqlite3.Error as e:
+            return DatabaseError(contxt, ExecutionOutcome.ERROR, exception=e)

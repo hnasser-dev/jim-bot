@@ -153,3 +153,14 @@ WHERE user_servers.server_id = :server_id
 GROUP BY user_servers.user_id
 ORDER BY name
 """
+
+# remove the most recent visit for a user
+REMOVE_MOST_RECENT_VISIT = """\
+DELETE FROM visits
+WHERE user_id = :user_id
+AND timestamp = (
+    SELECT MAX(timestamp)
+    FROM visits
+    WHERE user_id = :user_id
+);
+"""

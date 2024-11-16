@@ -192,6 +192,26 @@ class Commands(commands.Cog):
         await self.sesh(ctx, offset="-1")
 
     @commands.command()
+    async def removelast(self, ctx):
+        """ Remove your last gym visit """
+        contxt = DiscordCtx(ctx)
+        err = self.bot.database.remove_last_visit_for_user(contxt=contxt)
+        if isinstance(err, DatabaseError):
+            await contxt.reply_to_user(err.text, err.level)
+            return
+        new_num_visits = self.bot.database.get_num_user_visits(
+            contxt=contxt,
+            lookup_id=contxt.user_id
+        )
+        if isinstance(new_num_visits, DatabaseError):
+            await contxt.reply_to_user(new_num_visits.text, new_num_visits.level)
+            return
+        await contxt.reply_to_user(
+            f"Successfully removed your last visit. Your sesh count is now {new_num_visits}.",
+            exec_outcome=ExecutionOutcome.SUCCESS
+        )
+
+    @commands.command()
     async def visits(self, ctx, other=None):
         contxt = DiscordCtx(ctx)
         lookup_id = contxt.user_id if not other else DiscordCtx.extract_id(other)
@@ -334,6 +354,7 @@ class Commands(commands.Cog):
             `{BOT_PREFIX}leaveserver` --> disassociate yourself from this server
             `{BOT_PREFIX}sesh [day_offset]` --> record a gym session (`day_offset` can record seshes `up to 7 days into the past`)
             `{BOT_PREFIX}seshterday` --> record a gym session for yesterday (`day offset = -1`)
+            `{BOT_PREFIX}removelast` --> remove your last recorded gym session from the database
             `{BOT_PREFIX}visits [@user]` --> see how many times you (or someone else) has been to the gym
             `{BOT_PREFIX}last <N> [@user]` --> look at your (or someone else's) `last N gym visits`
             `{BOT_PREFIX}lastvisit [@user]` --> look up when you (or someone else) last went to the gym
