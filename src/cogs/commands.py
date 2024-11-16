@@ -241,9 +241,8 @@ class Commands(commands.Cog):
         for unix_date, in unix_dates: # leave the , --> needed to unpack size 1 tuple
             local_dt = DBTimezone.get_local_time(unix_date, timezone.pytz_tz)
             local_date, local_time = local_dt.strftime("%d %b %Y"), local_dt.strftime("%H:%M:%S")
-            dates.append(
-                (local_date, local_time, DBTimezone.days_ago_str(contxt.timestamp, unix_date))
-            )
+            # insert dates in reverse chronological order
+            dates.insert(0, (local_date, local_time, DBTimezone.days_ago_str(contxt.timestamp, unix_date)))
         refer_to_as = "You" if self_lookup else lookup_name
         if int(num_visits) == 1:
             msg = f"{refer_to_as} last visited the gym on {dates[0][0]}, at {dates[0][1]} ({dates[0][2]})."
