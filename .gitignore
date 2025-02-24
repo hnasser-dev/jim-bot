@@ -7,3 +7,4 @@ __pycache__
 /admin/
 **/*.log
 venv
+.python-version
