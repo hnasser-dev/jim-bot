@@ -1,8 +1,6 @@
 # Jim Bot
 ### A Discord bot that helps you track your gym visits.
 
-This is a remade version of my [previous Discord bot](https://github.com/finahdinner/discord-gym-bot), with additional functionality and a more robust design.
-
 ### Invite link: <b>https://discord.com/api/oauth2/authorize?client_id=1001599833586552993&permissions=2048&scope=bot</b>
 
 
@@ -64,7 +62,7 @@ Display information relating to each command.
 
 ### Quick start guide
 
-- Clone this repository, using `git clone git@github.com:finahdinner/jim-bot.git`.<br>
+- Clone this repository, using `git clone git@github.com:messy-coding/jim-bot.git`.<br>
 Ensure you have a suitable SSH key set up on your machine (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) for information regarding this).
 - Create a Python virtual environment, then activate it and use `pip install -r requirements.txt` to install the required dependencies.
 - Create your own [Discord Application](https://discord.com/developers/applications), and create a Bot.<br>
